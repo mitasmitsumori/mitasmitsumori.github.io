@@ -1,0 +1,11 @@
+<!-- 簡易版uchiwake.htmlサンプル -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>見積内訳</title>
+</head>
+<body>
+  <h1>見積結果がここに表示されます</h1>
+</body>
+</html>
