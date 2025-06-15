@@ -1,17 +1,35 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head><meta charset="UTF-8"><title>MiTAS 見積フォーム</title></head>
+<head>
+  <meta charset="UTF-8">
+  <title>MiTAS 見積フォーム</title>
+</head>
 <body>
   <h1>MiTAS 解体見積フォーム</h1>
-  <form action="result.html" method="get">
-    <label>建物構造：<select name="structure">
-      <option>木造</option><option>RC造</option><option>S造</option><option>軽量鉄骨</option>
-    </select></label><br>
+  <form action="uchiwake.html" method="get">
+    <label>建物構造：
+      <select name="structure">
+        <option>木造</option>
+        <option>RC造</option>
+        <option>S造</option>
+        <option>軽量鉄骨</option>
+      </select>
+    </label><br>
     <label>延床面積（㎡）：<input type="number" name="area"></label><br>
     <label>足場面積（㎡）：<input type="number" name="scaffold"></label><br>
     <label>現場住所：<input type="text" name="address"></label><br>
-    <label>残置物の有無：<select name="zanchi"><option>あり</option><option>なし</option></select></label><br>
-    <label>付帯工事の有無：<select name="futai"><option>あり</option><option>なし</option></select></label><br>
+    <label>残置物の有無：
+      <select name="zanchi">
+        <option>あり</option>
+        <option>なし</option>
+      </select>
+    </label><br>
+    <label>付帯工事の有無：
+      <select name="futai">
+        <option>あり</option>
+        <option>なし</option>
+      </select>
+    </label><br>
     <button type="submit">見積作成</button>
   </form>
 </body>
