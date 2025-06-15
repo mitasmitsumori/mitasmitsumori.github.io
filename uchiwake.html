@@ -14,32 +14,84 @@
       color: #2c3e50;
       text-align: center;
     }
-    .result {
-      border-top: 1px solid #ccc;
+    .item {
+      margin-bottom: 1rem;
+    }
+    .item label {
+      font-weight: bold;
+    }
+    .total {
       margin-top: 2rem;
-      padding-top: 1rem;
+      font-size: 1.2rem;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
   <h1>見積内訳</h1>
-  <div class="result">
-    <p><strong>建物構造：</strong><span id="structure"></span></p>
-    <p><strong>延床面積：</strong><span id="area"></span> ㎡</p>
-    <p><strong>足場面積：</strong><span id="scaffold"></span> ㎡</p>
-    <p><strong>現場住所：</strong><span id="address"></span></p>
-    <p><strong>残置物：</strong><span id="zanchi"></span></p>
-    <p><strong>付帯工事：</strong><span id="futai"></span></p>
-  </div>
+  <div class="item"><label>建物構造：</label><span id="structure"></span></div>
+  <div class="item"><label>延床面積：</label><span id="area"></span> ㎡</div>
+  <div class="item"><label>足場面積：</label><span id="scaffold"></span> ㎡</div>
+  <div class="item"><label>現場住所：</label><span id="address"></span></div>
+  <div class="item"><label>残置物：</label><span id="zanchi"></span></div>
+  <div class="item"><label>付帯工事：</label><span id="futai"></span></div>
+  
+  <div class="item"><label>解体工事費：</label><span id="price_kaitai"></span> 円</div>
+  <div class="item"><label>足場費：</label><span id="price_scaffold"></span> 円</div>
+  <div class="item"><label>重機回送費：</label><span id="price_machine"></span> 円</div>
+  <div class="item"><label>アスベスト調査費：</label><span id="price_asbestos"></span> 円</div>
+  <div class="item"><label>産廃処分費（木くず）：</label><span id="price_waste"></span> 円</div>
+
+  <div class="total">合計金額：<span id="total_price"></span> 円</div>
 
   <script>
     const params = new URLSearchParams(location.search);
-    document.getElementById("structure").textContent = params.get("structure") || "";
-    document.getElementById("area").textContent = params.get("area") || "";
-    document.getElementById("scaffold").textContent = params.get("scaffold") || "";
-    document.getElementById("address").textContent = params.get("address") || "";
-    document.getElementById("zanchi").textContent = params.get("zanchi") || "";
-    document.getElementById("futai").textContent = params.get("futai") || "";
+    const structure = params.get("structure");
+    const area = parseFloat(params.get("area")) || 0;
+    const scaffold = parseFloat(params.get("scaffold")) || 0;
+    const address = params.get("address") || "";
+    const zanchi = params.get("zanchi") || "";
+    const futai = params.get("futai") || "";
+
+    // 解体単価（㎡単価）
+    const unitPrice = {
+      "木造": 33000 / 3.3,
+      "RC造": 50000 / 3.3,
+      "S造": 33000 / 3.3,
+      "軽量鉄骨": 33000 / 3.3
+    };
+
+    // 固定費
+    const price_asbestos = 90000;
+    const price_scaffold = scaffold * 600;
+
+    // 重機回送費（仮に10km以内と仮定）
+    let price_machine = 14000;
+
+    // 産廃処分費（木くず）：1㎡ = 約40kg換算
+    const wood_kg = area * 40;
+    const price_waste = wood_kg * 16;
+
+    // 解体費用
+    const price_kaitai = Math.round(area * unitPrice[structure] || 0);
+
+    // 合計金額（値引き除く）
+    const total = price_kaitai + price_scaffold + price_machine + price_asbestos + price_waste;
+
+    // HTML反映
+    document.getElementById("structure").textContent = structure;
+    document.getElementById("area").textContent = area;
+    document.getElementById("scaffold").textContent = scaffold;
+    document.getElementById("address").textContent = address;
+    document.getElementById("zanchi").textContent = zanchi;
+    document.getElementById("futai").textContent = futai;
+
+    document.getElementById("price_kaitai").textContent = price_kaitai.toLocaleString();
+    document.getElementById("price_scaffold").textContent = price_scaffold.toLocaleString();
+    document.getElementById("price_machine").textContent = price_machine.toLocaleString();
+    document.getElementById("price_asbestos").textContent = price_asbestos.toLocaleString();
+    document.getElementById("price_waste").textContent = price_waste.toLocaleString();
+    document.getElementById("total_price").textContent = total.toLocaleString();
   </script>
 </body>
 </html>
