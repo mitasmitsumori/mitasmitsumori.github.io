@@ -1,53 +1,17 @@
-
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MiTAS 見積フォーム</title>
-  <style>
-    body { font-family: sans-serif; padding: 1rem; background: white; }
-    header { background: #1f2d3d; color: white; padding: 1rem; font-size: 1.5rem; text-align: center; }
-    label { display: block; margin-top: 1rem; font-weight: bold; }
-    input, select, button {
-      width: 100%; padding: 0.5rem; margin-top: 0.5rem;
-      font-size: 1rem; border: 1px solid #ccc; border-radius: 4px;
-    }
-    button { background: #1f2d3d; color: white; border: none; margin-top: 2rem; }
-  </style>
-</head>
+<head><meta charset="UTF-8"><title>MiTAS 見積フォーム</title></head>
 <body>
-  <header>MiTAS 解体見積フォーム</header>
+  <h1>MiTAS 解体見積フォーム</h1>
   <form action="result.html" method="get">
-    <label for="structure">建物構造</label>
-    <select name="structure" id="structure">
-      <option value="木造">木造</option>
-      <option value="RC造">RC造</option>
-      <option value="S造">S造</option>
-      <option value="軽量鉄骨">軽量鉄骨</option>
-    </select>
-
-    <label for="area">延床面積（㎡）</label>
-    <input type="number" id="area" name="area" required>
-
-    <label for="scaffold">足場面積（㎡）</label>
-    <input type="number" id="scaffold" name="scaffold" required>
-
-    <label for="address">現場住所</label>
-    <input type="text" id="address" name="address" required>
-
-    <label for="zanchi">残置物の有無</label>
-    <select name="zanchi" id="zanchi">
-      <option value="あり">あり</option>
-      <option value="なし">なし</option>
-    </select>
-
-    <label for="futai">付帯工事の有無</label>
-    <select name="futai" id="futai">
-      <option value="あり">あり</option>
-      <option value="なし">なし</option>
-    </select>
-
+    <label>建物構造：<select name="structure">
+      <option>木造</option><option>RC造</option><option>S造</option><option>軽量鉄骨</option>
+    </select></label><br>
+    <label>延床面積（㎡）：<input type="number" name="area"></label><br>
+    <label>足場面積（㎡）：<input type="number" name="scaffold"></label><br>
+    <label>現場住所：<input type="text" name="address"></label><br>
+    <label>残置物の有無：<select name="zanchi"><option>あり</option><option>なし</option></select></label><br>
+    <label>付帯工事の有無：<select name="futai"><option>あり</option><option>なし</option></select></label><br>
     <button type="submit">見積作成</button>
   </form>
 </body>
