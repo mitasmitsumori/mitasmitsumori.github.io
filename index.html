@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MiTAS 見積作成</title>
   <style>
     body {
@@ -44,22 +44,15 @@
       margin-top: 1rem;
     }
     .photo-upload {
-      border: 1px solid #dcdcdc;
-      border-radius: 5px;
-      padding: 1rem;
-      text-align: center;
-      font-size: 2rem;
-      background-color: #ffffff;
-      color: #2c3e50;
       margin-bottom: 1rem;
     }
   </style>
 </head>
 <body>
-  <header>MiTAS 見積作成</header>
+  <header>MiTAS</header>
   <form action="uchiwake.html" method="get">
     <label>建物の構造
-      <select name="structure">
+      <select name="structure" required>
         <option>木造</option>
         <option>RC造</option>
         <option>S造</option>
@@ -71,17 +64,33 @@
       <input type="number" name="area" required />
     </label>
 
-    <label>位置情報
+    <label>足場面積（㎡）
+      <input type="number" name="scaffold" required />
+    </label>
+
+    <label>現場住所
       <input type="text" name="address" required />
     </label>
 
-    <div class="photo-upload">＋</div>
-
-    <label>産廃量自動計算
-      <input type="text" name="waste" />
+    <label>残置物の有無
+      <select name="zanchi" required>
+        <option>あり</option>
+        <option>なし</option>
+      </select>
     </label>
 
-    <button type="submit">見積を作成</button>
+    <label>付帯工事の有無
+      <select name="futai" required>
+        <option>あり</option>
+        <option>なし</option>
+      </select>
+    </label>
+
+    <label>現場写真（最大5枚）
+      <input type="file" name="photo" accept="image/*" multiple />
+    </label>
+
+    <button type="submit">見積作成</button>
   </form>
 </body>
 </html>
