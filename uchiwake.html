@@ -2,32 +2,55 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>見積結果</title>
+  <title>見積内訳</title>
 </head>
 <body>
-  <h1>見積結果</h1>
-  <div id="result">
-    <!-- 結果をここに表示 -->
-  </div>
+  <h1>見積内訳</h1>
+  <div id="uchiwake"></div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
     const structure = params.get("structure");
-    const area = params.get("area");
-    const scaffold = params.get("scaffold");
+    const area = parseFloat(params.get("area")); // ㎡
+    const scaffold = parseFloat(params.get("scaffold")); // ㎡
     const address = params.get("address");
     const zanchi = params.get("zanchi");
     const futai = params.get("futai");
 
-    const resultHTML = `
-      <p><strong>建物構造：</strong> ${structure}</p>
-      <p><strong>延床面積：</strong> ${area} ㎡</p>
-      <p><strong>足場面積：</strong> ${scaffold} ㎡</p>
-      <p><strong>現場住所：</strong> ${address}</p>
-      <p><strong>残置物：</strong> ${zanchi}</p>
-      <p><strong>付帯工事：</strong> ${futai}</p>
+    // 単価定義
+    const tanka_per_tsubo = {
+      "木造": 33000,
+      "RC造": 50000,
+      "S造": 33000,
+      "軽量鉄骨": 33000
+    };
+    const tanka_scaffold = 600;
+    const asbestos_chosa = 90000;
+    const zanchi_cost = zanchi === "あり" ? 50000 : 0;
+    const futai_cost = futai === "あり" ? 80000 : 0;
+    const kaisouhi = 14000;
+
+    const tsubo = area / 3.3;
+    const main_cost = tsubo * (tanka_per_tsubo[structure] || 0);
+    const scaffold_cost = scaffold * tanka_scaffold;
+
+    const total = main_cost + scaffold_cost + asbestos_chosa + zanchi_cost + futai_cost + kaisouhi;
+
+    const html = `
+      <p><strong>現場住所：</strong>${address}</p>
+      <p><strong>構造：</strong>${structure}</p>
+      <p><strong>延床面積：</strong>${area}㎡（約${tsubo.toFixed(1)}坪）</p>
+      <p><strong>解体費：</strong>${main_cost.toLocaleString()} 円</p>
+      <p><strong>足場費：</strong>${scaffold_cost.toLocaleString()} 円</p>
+      <p><strong>アスベスト調査費：</strong>${asbestos_chosa.toLocaleString()} 円</p>
+      <p><strong>残置物処分費：</strong>${zanchi_cost.toLocaleString()} 円</p>
+      <p><strong>付帯工事費：</strong>${futai_cost.toLocaleString()} 円</p>
+      <p><strong>重機回送費：</strong>${kaisouhi.toLocaleString()} 円</p>
+      <hr>
+      <h3>見積合計：${total.toLocaleString()} 円（税別）</h3>
     `;
-    document.getElementById("result").innerHTML = resultHTML;
+
+    document.getElementById("uchiwake").innerHTML = html;
   </script>
 </body>
 </html>
