@@ -1,22 +1,33 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>見積書（仮）</title>
-</head>
-<body>
-  <h1>見積書がここに表示されます</h1>
-  <p>※ここに見積結果やPDF生成などの内容を追加していきます</p>
-</body>
-</html>
-<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>MiTAS 見積結果</title>
+  <title>見積結果</title>
 </head>
 <body>
-  <h1>見積書がここに表示されます</h1>
-  <p>※ ここに見積結果やPDF生成などの内容を追加していきます</p>
+  <h1>見積結果</h1>
+  <div id="result">
+    <!-- 結果をここに表示 -->
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const structure = params.get("structure");
+    const area = params.get("area");
+    const scaffold = params.get("scaffold");
+    const address = params.get("address");
+    const zanchi = params.get("zanchi");
+    const futai = params.get("futai");
+
+    const resultHTML = `
+      <p><strong>建物構造：</strong> ${structure}</p>
+      <p><strong>延床面積：</strong> ${area} ㎡</p>
+      <p><strong>足場面積：</strong> ${scaffold} ㎡</p>
+      <p><strong>現場住所：</strong> ${address}</p>
+      <p><strong>残置物：</strong> ${zanchi}</p>
+      <p><strong>付帯工事：</strong> ${futai}</p>
+    `;
+    document.getElementById("result").innerHTML = resultHTML;
+  </script>
 </body>
 </html>
