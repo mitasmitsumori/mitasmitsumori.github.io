@@ -3,85 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MiTAS 見積作成</title>
+  <title>見積内訳</title>
   <style>
     body {
-      margin: 0;
       font-family: 'Helvetica Neue', sans-serif;
-      background-color: #f8f8f8;
+      background-color: #ffffff;
+      margin: 0;
+      padding: 0;
     }
     header {
       background-color: #2c3e50;
       color: white;
-      padding: 1rem;
-      font-size: 1.5rem;
+      padding: 15px;
       text-align: center;
-    }
-    form {
-      padding: 1.5rem;
-    }
-    label {
-      display: block;
-      margin-bottom: 1rem;
+      font-size: 24px;
       font-weight: bold;
     }
-    input, select {
-      width: 100%;
-      padding: 0.75rem;
-      font-size: 1rem;
-      border: 1px solid #dcdcdc;
-      border-radius: 5px;
-      background-color: #ffffff;
+    .container {
+      padding: 20px;
+      font-size: 16px;
     }
-    button {
-      width: 100%;
-      padding: 1rem;
-      background-color: #2c3e50;
-      color: white;
-      font-size: 1rem;
-      border: none;
-      border-radius: 5px;
-      margin-top: 1rem;
+    .section {
+      margin-bottom: 20px;
     }
-    .photo-upload {
-      border: 1px solid #dcdcdc;
-      border-radius: 5px;
-      padding: 1rem;
-      text-align: center;
-      font-size: 2rem;
-      background-color: #ffffff;
-      color: #2c3e50;
-      margin-bottom: 1rem;
+    .label {
+      font-weight: bold;
+      margin-right: 10px;
     }
   </style>
 </head>
 <body>
-  <header>MiTAS 見積作成</header>
-  <form action="uchiwake.html" method="get">
-    <label>建物の構造
-      <select name="structure">
-        <option>木造</option>
-        <option>RC造</option>
-        <option>S造</option>
-        <option>軽量鉄骨</option>
-      </select>
-    </label>
+  <header>MiTAS</header>
+  <div class="container">
+    <div class="section"><span class="label">建物構造：</span><span id="structure"></span></div>
+    <div class="section"><span class="label">延床面積：</span><span id="area"></span> ㎡</div>
+    <div class="section"><span class="label">足場面積：</span><span id="scaffold"></span> ㎡</div>
+    <div class="section"><span class="label">現場住所：</span><span id="address"></span></div>
+    <div class="section"><span class="label">残置物：</span><span id="zanchi"></span></div>
+    <div class="section"><span class="label">付帯工事：</span><span id="futai"></span></div>
+    <div class="section"><span class="label">写真：</span><span id="photos">アップロード未対応</span></div>
+  </div>
 
-    <label>延床面積（㎡）
-      <input type="number" name="area" required />
-    </label>
-
-    <label>位置情報
-      <input type="text" name="address" required />
-    </label>
-
-    <div class="photo-upload">＋</div>
-
-    <label>産廃量自動計算
-      <input type="text" name="waste" />
-    </label>
-
-    <button type="submit">見積を作成</button>
-  </form>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    document.getElementById("structure").textContent = urlParams.get("structure") || "－";
+    document.getElementById("area").textContent = urlParams.get("area") || "－";
+    document.getElementById("scaffold").textContent = urlParams.get("scaffold") || "－";
+    document.getElementById("address").textContent = urlParams.get("address") || "－";
+    document.getElementById("zanchi").textContent = urlParams.get("zanchi") || "－";
+    document.getElementById("futai").textContent = urlParams.get("futai") || "－";
+  </script>
 </body>
 </html>
