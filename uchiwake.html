@@ -20,11 +20,6 @@
     .item label {
       font-weight: bold;
     }
-    .total {
-      margin-top: 2rem;
-      font-size: 1.2rem;
-      font-weight: bold;
-    }
   </style>
 </head>
 <body>
@@ -35,16 +30,15 @@
   <div class="item"><label>現場住所：</label><span id="address"></span></div>
   <div class="item"><label>残置物：</label><span id="zanchi"></span></div>
   <div class="item"><label>付帯工事：</label><span id="futai"></span></div>
-  <div class="total">※ここに金額を自動計算で追加可能</div>
 
   <script>
-    const params = new URLSearchParams(location.search);
-    document.getElementById("structure").textContent = params.get("structure") || "";
-    document.getElementById("area").textContent = params.get("area") || "";
-    document.getElementById("scaffold").textContent = params.get("scaffold") || "";
-    document.getElementById("address").textContent = params.get("address") || "";
-    document.getElementById("zanchi").textContent = params.get("zanchi") || "";
-    document.getElementById("futai").textContent = params.get("futai") || "";
+    const params = new URLSearchParams(window.location.search);
+    document.getElementById("structure").textContent = params.get("structure") || "（未入力）";
+    document.getElementById("area").textContent = params.get("area") || "（未入力）";
+    document.getElementById("scaffold").textContent = params.get("scaffold") || "（未入力）";
+    document.getElementById("address").textContent = params.get("address") || "（未入力）";
+    document.getElementById("zanchi").textContent = params.get("zanchi") || "（未入力）";
+    document.getElementById("futai").textContent = params.get("futai") || "（未入力）";
   </script>
 </body>
 </html>
