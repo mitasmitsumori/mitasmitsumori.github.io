@@ -1,1 +1,15 @@
-<form action="https://mitasmitsumori.github.io/uchiwake.html" method="get">
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>見積内訳</title>
+</head>
+<body>
+  <h1>見積内訳</h1>
+  <p><strong>建物構造：</strong><span id="structure"></span></p>
+  <script>
+    const params = new URLSearchParams(location.search);
+    document.getElementById("structure").textContent = params.get("structure") || "";
+  </script>
+</body>
+</html>
