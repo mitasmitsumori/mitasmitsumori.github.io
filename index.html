@@ -1,47 +1,93 @@
-<style>
-  body {
-    margin: 0;
-    font-family: 'Helvetica Neue', sans-serif;
-    background-color: #f8f8f8;
-  }
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MiTAS 見積作成</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Helvetica Neue', sans-serif;
+      background-color: #f8f8f8;
+    }
+    header {
+      background-color: #2c3e50;
+      color: white;
+      padding: 1rem;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+    form {
+      padding: 1.5rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 1rem;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid #dcdcdc;
+      border-radius: 5px;
+      background-color: #ffffff;
+    }
+    button {
+      width: 100%;
+      padding: 1rem;
+      background-color: #2c3e50;
+      color: white;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>MiTAS</header>
+  <form action="uchiwake.html" method="get">
+    <label>建物の構造
+      <select name="structure" required>
+        <option>木造</option>
+        <option>RC造</option>
+        <option>S造</option>
+        <option>軽量鉄骨</option>
+      </select>
+    </label>
 
-  header {
-    background-color: #2c3e50;
-    color: white;
-    padding: 1rem;
-    font-size: 1.5rem;
-    text-align: center;
-  }
+    <label>延床面積（㎡）
+      <input type="number" name="area" required />
+    </label>
 
-  form {
-    display: flex;
-    flex-direction: column;
-    padding: 1.5rem;
-    gap: 1rem;
-  }
+    <label>足場面積（㎡）
+      <input type="number" name="scaffold" required />
+    </label>
 
-  label {
-    font-weight: bold;
-    font-size: 1rem;
-  }
+    <label>現場住所
+      <input type="text" name="address" required />
+    </label>
 
-  input, select {
-    padding: 0.75rem;
-    font-size: 1rem;
-    border: 1px solid #dcdcdc;
-    border-radius: 5px;
-    background-color: #ffffff;
-    width: 100%;
-  }
+    <label>残置物の有無
+      <select name="zanchi" required>
+        <option>あり</option>
+        <option>なし</option>
+      </select>
+    </label>
 
-  button {
-    padding: 1rem;
-    background-color: #2c3e50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    margin-top: 1rem;
-    width: 100%;
-  }
-</style>
+    <label>付帯工事の有無
+      <select name="futai" required>
+        <option>あり</option>
+        <option>なし</option>
+      </select>
+    </label>
+
+    <label>現場写真（最大5枚）
+      <input type="file" name="photo" accept="image/*" multiple />
+    </label>
+
+    <button type="submit">見積作成</button>
+  </form>
+</body>
+</html>
