@@ -1,35 +1,38 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MiTAS 見積内訳</title>
-  <style>
-    body { font-family: 'Helvetica Neue', sans-serif; padding: 2rem; background: #fff; }
-    h1 { text-align: center; color: #2c3e50; }
-    .item { margin-bottom: 1rem; }
-    .item label { font-weight: bold; }
-    .total { margin-top: 2rem; font-size: 1.2rem; font-weight: bold; }
-  </style>
-</head>
-<body>
-  <h1>見積内訳</h1>
-  <div class="item"><label>建物構造：</label><span id="structure"></span></div>
-  <div class="item"><label>延床面積：</label><span id="area"></span> ㎡</div>
-  <div class="item"><label>足場面積：</label><span id="scaffold"></span> ㎡</div>
-  <div class="item"><label>現場住所：</label><span id="address"></span></div>
-  <div class="item"><label>残置物：</label><span id="zanchi"></span></div>
-  <div class="item"><label>付帯工事：</label><span id="futai"></span></div>
-  <div class="total">※ここに金額を自動計算で追加可能</div>
+<form action="uchiwake.html" method="get">
+  <label>建物の構造
+    <select name="structure" required>
+      <option>木造</option>
+      <option>RC造</option>
+      <option>S造</option>
+      <option>軽量鉄骨</option>
+    </select>
+  </label>
 
-  <script>
-    const params = new URLSearchParams(location.search);
-    document.getElementById("structure").textContent = params.get("structure") || "";
-    document.getElementById("area").textContent = params.get("area") || "";
-    document.getElementById("scaffold").textContent = params.get("scaffold") || "";
-    document.getElementById("address").textContent = params.get("address") || "";
-    document.getElementById("zanchi").textContent = params.get("zanchi") || "";
-    document.getElementById("futai").textContent = params.get("futai") || "";
-  </script>
-</body>
-</html>
+  <label>延床面積（㎡）
+    <input type="number" name="area" required />
+  </label>
+
+  <label>足場面積（㎡）
+    <input type="number" name="scaffold" required />
+  </label>
+
+  <label>現場住所
+    <input type="text" name="address" required />
+  </label>
+
+  <label>残置物の有無
+    <select name="zanchi" required>
+      <option>あり</option>
+      <option>なし</option>
+    </select>
+  </label>
+
+  <label>付帯工事の有無
+    <select name="futai" required>
+      <option>あり</option>
+      <option>なし</option>
+    </select>
+  </label>
+
+  <button type="submit">見積作成</button>
+</form>
