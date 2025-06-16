@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MiTAS 見積作成</title>
   <style>
     body {
@@ -50,10 +50,10 @@
   <form action="uchiwake.html" method="get">
     <label>建物の構造
       <select name="structure" required>
-        <option>木造</option>
-        <option>RC造</option>
-        <option>S造</option>
-        <option>軽量鉄骨</option>
+        <option value="木造">木造</option>
+        <option value="RC造">RC造</option>
+        <option value="S造">S造</option>
+        <option value="軽量鉄骨">軽量鉄骨</option>
       </select>
     </label>
 
@@ -71,20 +71,16 @@
 
     <label>残置物の有無
       <select name="zanchi" required>
-        <option>あり</option>
-        <option>なし</option>
+        <option value="あり">あり</option>
+        <option value="なし">なし</option>
       </select>
     </label>
 
     <label>付帯工事の有無
       <select name="futai" required>
-        <option>あり</option>
-        <option>なし</option>
+        <option value="あり">あり</option>
+        <option value="なし">なし</option>
       </select>
-    </label>
-
-    <label>現場写真（最大5枚）
-      <input type="file" name="photo" accept="image/*" multiple />
     </label>
 
     <button type="submit">見積作成</button>
