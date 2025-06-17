@@ -83,12 +83,20 @@
         .then(() => {
           // 保存成功後に uchiwake.html に遷移
           const params = new URLSearchParams({
-            structure,
-            area,
-            address,
-            scaffold: scaffoldArea,
-            leftovers,
-            additional
+            const params = new URLSearchParams({
+  structure,
+  area,
+  address,
+  scaffold: scaffoldArea,
+  leftovers,
+  additional,
+  woodWaste: document.getElementById("woodWaste").value,
+  boardWaste: document.getElementById("boardWaste").value,
+  plasticWaste: document.getElementById("plasticWaste").value,
+  rubbleWaste: document.getElementById("rubbleWaste").value,
+  glassWaste: document.getElementById("glassWaste").value,
+  ceramicWaste: document.getElementById("ceramicWaste").value
+});
           });
           window.location.href = `uchiwake.html?${params.toString()}`;
         })
