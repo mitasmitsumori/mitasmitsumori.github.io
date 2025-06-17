@@ -4,6 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MiTAS 見積フォーム</title>
+  <style>
+    body { font-family: 'IPAexMincho', serif; padding: 20px; background: #f8f8f8; }
+    h1 { color: #2c3e50; }
+    label, input, select { display: block; margin: 10px 0; width: 100%; }
+    input, select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+    button { padding: 10px 15px; background: #2c3e50; color: white; border: none; border-radius: 4px; }
+  </style>
 </head>
 <body>
   <h1>MiTAS 見積作成</h1>
@@ -15,51 +22,83 @@
         <option value="S造">S造</option>
         <option value="軽量鉄骨造">軽量鉄骨造</option>
       </select>
-    </label><br/>
+    </label>
 
-    <label>延床面積（㎡）：<input type="number" id="area" required /></label><br/>
-    <label>現場住所：<input type="text" id="address" required /></label><br/>
-    <label>足場面積（㎡）：<input type="number" id="scaffoldArea" /></label><br/>
+    <label>延床面積（㎡）：<input type="number" id="area" required /></label>
+    <label>現場住所：<input type="text" id="address" required /></label>
+    <label>足場面積（㎡）：<input type="number" id="scaffoldArea" /></label>
 
     <label>残置物の有無：
       <input type="radio" name="leftovers" value="あり">あり
-      <input type="radio" name="leftovers" value="なし">なし
-    </label><br/>
+      <input type="radio" name="leftovers" value="なし" checked>なし
+    </label>
 
     <label>付帯工事の有無：
       <input type="radio" name="additional" value="あり">あり
-      <input type="radio" name="additional" value="なし">なし
-    </label><br/>
+      <input type="radio" name="additional" value="なし" checked>なし
+    </label>
 
-    <h3>発生材の入力（kg）</h3>
-    <label>木くず：<input type="number" id="woodWaste" /></label><br/>
-    <label>ボード類：<input type="number" id="boardWaste" /></label><br/>
-    <label>廃プラ類：<input type="number" id="plasticWaste" /></label><br/>
-    <label>ガラ：<input type="number" id="rubbleWaste" /></label><br/>
-    <label>ガラス：<input type="number" id="glassWaste" /></label><br/>
-    <label>陶器：<input type="number" id="ceramicWaste" /></label><br/>
+    <h3>発生材（kg）</h3>
+    <label>木くず：<input type="number" id="woodWaste" /></label>
+    <label>ボード類：<input type="number" id="boardWaste" /></label>
+    <label>廃プラ類：<input type="number" id="plasticWaste" /></label>
+    <label>ガラ：<input type="number" id="rubbleWaste" /></label>
+    <label>ガラス：<input type="number" id="glassWaste" /></label>
+    <label>陶器：<input type="number" id="ceramicWaste" /></label>
 
     <button type="submit">見積作成</button>
   </form>
 
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
   <script>
+    // あとで【B】で差し替える firebaseConfig
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     document.getElementById("estimateForm").addEventListener("submit", function(e) {
       e.preventDefault();
-      const params = new URLSearchParams({
-        structure: document.getElementById("structure").value,
-        area: document.getElementById("area").value,
-        address: document.getElementById("address").value,
-        scaffold: document.getElementById("scaffoldArea").value,
-        leftovers: document.querySelector('input[name="leftovers"]:checked')?.value || "",
-        additional: document.querySelector('input[name="additional"]:checked')?.value || "",
+
+      const structure = document.getElementById("structure").value;
+      const area = document.getElementById("area").value;
+      const address = document.getElementById("address").value;
+      const scaffoldArea = document.getElementById("scaffoldArea").value;
+      const leftovers = document.querySelector('input[name="leftovers"]:checked')?.value || "";
+      const additional = document.querySelector('input[name="additional"]:checked')?.value || "";
+
+      const data = {
+        structure,
+        area,
+        address,
+        scaffoldArea,
+        leftovers,
+        additional,
         woodWaste: document.getElementById("woodWaste").value,
         boardWaste: document.getElementById("boardWaste").value,
         plasticWaste: document.getElementById("plasticWaste").value,
         rubbleWaste: document.getElementById("rubbleWaste").value,
         glassWaste: document.getElementById("glassWaste").value,
-        ceramicWaste: document.getElementById("ceramicWaste").value
+        ceramicWaste: document.getElementById("ceramicWaste").value,
+        createdAt: new Date()
+      };
+
+      db.collection("estimates").add(data).then(() => {
+        const params = new URLSearchParams(data).toString();
+        window.location.href = `uchiwake.html?${params}`;
+      }).catch((error) => {
+        alert("保存エラー：" + error);
       });
-      window.location.href = `uchiwake.html?${params.toString()}`;
     });
   </script>
 </body>
