@@ -1,18 +1,35 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>見積一覧 - MiTAS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: 'IPAexMincho', serif; margin: 20px; }
+    h1 { text-align: center; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+    th { background-color: #eee; }
+    button { padding: 6px 10px; font-size: 14px; }
+  </style>
 </head>
 <body>
-  <h1>見積一覧</h1>
-  <ul id="estimateList"></ul>
+  <h1>見積一覧（Firebase連携）</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>お客様名</th>
+        <th>現場住所</th>
+        <th>建物構造</th>
+        <th>延床面積</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="estimateList"></tbody>
+  </table>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAN1cDb1yBdYBzEXQ2CD8anlih7YuPXggo",
@@ -23,23 +40,28 @@
       appId: "1:889863551826:web:71577461b5b9d810d4188b",
       measurementId: "G-Y0H10QQQ16"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const list = document.getElementById("estimateList");
+    const listElem = document.getElementById("estimateList");
 
-    db.collection("estimates").orderBy("createdAt", "desc").get().then(snapshot => {
+    async function loadEstimates() {
+      const snapshot = await db.collection("estimates").orderBy("timestamp", "desc").get();
       snapshot.forEach(doc => {
         const data = doc.data();
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <strong>${data.address || '住所不明'}</strong> - ${data.structure} (${data.area}㎡)
-          <br/><a href="edit.html?id=${doc.id}">詳細を見る</a>
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${data.customerName || "-"}</td>
+          <td>${data.siteAddress || "-"}</td>
+          <td>${data.structure || "-"}</td>
+          <td>${data.area || 0}㎡</td>
+          <td><a href="uchiwake.html?id=${doc.id}"><button>詳細を見る</button></a></td>
         `;
-        list.appendChild(li);
+        listElem.appendChild(tr);
       });
-    });
+    }
+
+    loadEstimates();
   </script>
 </body>
 </html>
