@@ -3,20 +3,54 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>見積内訳</title>
+  <title>MiTAS 見積内訳</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    h1 { font-size: 24px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f0f0f0; }
+  </style>
 </head>
 <body>
-  <h1>御見積内訳書</h1>
-  <table border="1">
-    <tbody id="estimateTable"></tbody>
+  <h1>見積内訳</h1>
+  <table>
+    <tr><th>項目</th><th>内容</th></tr>
+    <tr><td>建物構造</td><td id="structure"></td></tr>
+    <tr><td>延床面積（㎡）</td><td id="area"></td></tr>
+    <tr><td>現場住所</td><td id="address"></td></tr>
+    <tr><td>足場面積（㎡）</td><td id="scaffold"></td></tr>
+    <tr><td>残置物の有無</td><td id="leftovers"></td></tr>
+    <tr><td>付帯工事の有無</td><td id="additional"></td></tr>
+    <tr><td>解体工事費</td><td id="demolitionCost"></td></tr>
+    <tr><td>足場費</td><td id="scaffoldCost"></td></tr>
+    <tr><td>重機回送費</td><td id="machineCost"></td></tr>
+    <tr><td>アスベスト調査費</td><td id="asbestosCost"></td></tr>
+    <tr><td>産廃処分費（木くず）</td><td id="woodWasteCost"></td></tr>
+    <tr><td>産廃処分費（ボード類）</td><td id="boardWasteCost"></td></tr>
+    <tr><td>産廃処分費（廃プラ類）</td><td id="plasticWasteCost"></td></tr>
+    <tr><td>産廃処分費（ガラ）</td><td id="rubbleWasteCost"></td></tr>
+    <tr><td>産廃処分費（ガラス）</td><td id="glassWasteCost"></td></tr>
+    <tr><td>産廃処分費（陶器）</td><td id="ceramicWasteCost"></td></tr>
   </table>
-  <button onclick="window.print()">PDFとして保存</button>
 
   <script>
     const params = new URLSearchParams(window.location.search);
-    const structure = params.get("structure") || "";
+
+    const structure = params.get("structure") || "木造";
     const area = parseFloat(params.get("area") || 0);
+    const address = params.get("address") || "";
     const scaffold = parseFloat(params.get("scaffold") || 0);
+    const leftovers = params.get("leftovers") || "";
+    const additional = params.get("additional") || "";
+
+    document.getElementById("structure").textContent = structure;
+    document.getElementById("area").textContent = area;
+    document.getElementById("address").textContent = address;
+    document.getElementById("scaffold").textContent = scaffold;
+    document.getElementById("leftovers").textContent = leftovers;
+    document.getElementById("additional").textContent = additional;
+
     const unitPrices = {
       "木造": 33000 / 3.3,
       "RC造": 50000 / 3.3,
@@ -24,36 +58,37 @@
       "軽量鉄骨造": 33000 / 3.3
     };
 
-    const wastePrices = {
-      wood: 16, board: 35, plastic: 50, rubble: 2, glass: 10, ceramic: 20
-    };
-
-    const wasteAmounts = {
-      wood: parseFloat(params.get("woodWaste") || 0),
-      board: parseFloat(params.get("boardWaste") || 0),
-      plastic: parseFloat(params.get("plasticWaste") || 0),
-      rubble: parseFloat(params.get("rubbleWaste") || 0),
-      glass: parseFloat(params.get("glassWaste") || 0),
-      ceramic: parseFloat(params.get("ceramicWaste") || 0)
-    };
-
-    const demolitionCost = Math.round(area * unitPrices[structure]);
+    const demolitionCost = Math.round(area * (unitPrices[structure] || 0));
     const scaffoldCost = Math.round(scaffold * 600);
-    const asbestosSurvey = 90000;
-    const totalWasteCost = Object.keys(wastePrices).reduce((sum, key) => {
-      return sum + (wastePrices[key] * (wasteAmounts[key] || 0));
-    }, 0);
+    const machineCost = 14000;
+    const asbestosCost = 90000;
 
-    const total = demolitionCost + scaffoldCost + asbestosSurvey + totalWasteCost;
+    document.getElementById("demolitionCost").textContent = `${demolitionCost.toLocaleString()} 円`;
+    document.getElementById("scaffoldCost").textContent = `${scaffoldCost.toLocaleString()} 円`;
+    document.getElementById("machineCost").textContent = `${machineCost.toLocaleString()} 円`;
+    document.getElementById("asbestosCost").textContent = `${asbestosCost.toLocaleString()} 円`;
 
-    const table = document.getElementById("estimateTable");
-    table.innerHTML = `
-      <tr><td>解体工事費 (${structure})</td><td>${demolitionCost.toLocaleString()} 円</td></tr>
-      <tr><td>足場費</td><td>${scaffoldCost.toLocaleString()} 円</td></tr>
-      <tr><td>アスベスト調査費</td><td>${asbestosSurvey.toLocaleString()} 円</td></tr>
-      <tr><td>産廃処分費</td><td>${totalWasteCost.toLocaleString()} 円</td></tr>
-      <tr><th>合計</th><th>${total.toLocaleString()} 円</th></tr>
-    `;
+    const wasteUnitPrices = {
+      wood: 16,
+      board: 35,
+      plastic: 50,
+      rubble: 2,
+      glass: 10,
+      ceramic: 20
+    };
+
+    function calcWasteCost(type, paramKey, elementId) {
+      const qty = parseFloat(params.get(paramKey) || 0);
+      const cost = Math.round(qty * (wasteUnitPrices[type] || 0));
+      document.getElementById(elementId).textContent = cost.toLocaleString() + " 円";
+    }
+
+    calcWasteCost("wood", "woodWaste", "woodWasteCost");
+    calcWasteCost("board", "boardWaste", "boardWasteCost");
+    calcWasteCost("plastic", "plasticWaste", "plasticWasteCost");
+    calcWasteCost("rubble", "rubbleWaste", "rubbleWasteCost");
+    calcWasteCost("glass", "glassWaste", "glassWasteCost");
+    calcWasteCost("ceramic", "ceramicWaste", "ceramicWasteCost");
   </script>
 </body>
 </html>
