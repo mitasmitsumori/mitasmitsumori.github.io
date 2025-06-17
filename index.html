@@ -31,14 +31,16 @@
       <input type="radio" name="additional" value="なし">なし
     </label><br/>
 
+    <h3>発生材の入力（kg）</h3>
+    <label>木くず（kg）：<input type="number" id="woodWaste" /></label><br/>
+    <label>ボード類（kg）：<input type="number" id="boardWaste" /></label><br/>
+    <label>廃プラ類（kg）：<input type="number" id="plasticWaste" /></label><br/>
+    <label>ガラ（kg）：<input type="number" id="rubbleWaste" /></label><br/>
+    <label>ガラス（kg）：<input type="number" id="glassWaste" /></label><br/>
+    <label>陶器（kg）：<input type="number" id="ceramicWaste" /></label><br/>
+
     <button type="submit">見積作成</button>
-  </form><h3>発生材の入力（kg）</h3>
-<label>木くず（kg）：<input type="number" name="woodWaste" id="woodWaste" /></label><br/>
-<label>ボード類（kg）：<input type="number" name="boardWaste" id="boardWaste" /></label><br/>
-<label>廃プラ類（kg）：<input type="number" name="plasticWaste" id="plasticWaste" /></label><br/>
-<label>ガラ（kg）：<input type="number" name="rubbleWaste" id="rubbleWaste" /></label><br/>
-<label>ガラス（kg）：<input type="number" name="glassWaste" id="glassWaste" /></label><br/>
-<label>陶器（kg）：<input type="number" name="ceramicWaste" id="ceramicWaste" /></label><br/>
+  </form>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -68,6 +70,7 @@
       const leftovers = document.querySelector('input[name="leftovers"]:checked')?.value || "";
       const additional = document.querySelector('input[name="additional"]:checked')?.value || "";
 
+      // Firestoreに保存するデータ（オプション）
       const data = {
         structure,
         area,
@@ -78,53 +81,28 @@
         createdAt: new Date()
       };
 
-      // Firestoreに保存
-      db.collection("estimates").add(data)
-        .then(() => {
-          // 保存成功後に uchiwake.html に遷移
-          const params = new URLSearchParams({
-            const params = new URLSearchParams({
-  structure,
-  area,
-  address,
-  scaffold: scaffoldArea,
-  leftovers,
-  additional,
-  woodWaste: document.getElementById("woodWaste").value,
-  boardWaste: document.getElementById("boardWaste").value,
-  plasticWaste: document.getElementById("plasticWaste").value,
-  rubbleWaste: document.getElementById("rubbleWaste").value,
-  glassWaste: document.getElementById("glassWaste").value,
-  ceramicWaste: document.getElementById("ceramicWaste").value
-});
-          });
-          window.location.href = `uchiwake.html?${params.toString()}`;
-        })
-        .catch((error) => {
-          alert("保存エラー: " + error);
+      // Firestore保存
+      db.collection("estimates").add(data).then(() => {
+        // 保存成功 → パラメータ付きで遷移
+        const params = new URLSearchParams({
+          structure,
+          area,
+          address,
+          scaffold: scaffoldArea,
+          leftovers,
+          additional,
+          woodWaste: document.getElementById("woodWaste").value,
+          boardWaste: document.getElementById("boardWaste").value,
+          plasticWaste: document.getElementById("plasticWaste").value,
+          rubbleWaste: document.getElementById("rubbleWaste").value,
+          glassWaste: document.getElementById("glassWaste").value,
+          ceramicWaste: document.getElementById("ceramicWaste").value
         });
+        window.location.href = `uchiwake.html?${params.toString()}`;
+      }).catch((error) => {
+        alert("保存エラー: " + error);
+      });
     });
   </script>
 </body>
 </html>
-<h3>産廃の発生量（㎏）</h3>
-<label>木くず：<input type="number" id="woodWaste" /> kg</label><br/>
-<label>ボード類：<input type="number" id="boardWaste" /> kg</label><br/>
-<label>廃プラ類：<input type="number" id="plasticWaste" /> kg</label><br/>
-<label>ガラ：<input type="number" id="rubbleWaste" /> kg</label><br/>
-<label>ガラス：<input type="number" id="glassWaste" /> kg</label><br/>
-<label>陶器：<input type="number" id="ceramicWaste" /> kg</label><br/>
-const params = new URLSearchParams({
-  structure,
-  area,
-  address,
-  scaffold: scaffoldArea,
-  leftovers,
-  additional,
-  woodWaste: document.getElementById("woodWaste").value,
-  boardWaste: document.getElementById("boardWaste").value,
-  plasticWaste: document.getElementById("plasticWaste").value,
-  rubbleWaste: document.getElementById("rubbleWaste").value,
-  glassWaste: document.getElementById("glassWaste").value,
-  ceramicWaste: document.getElementById("ceramicWaste").value
-});
