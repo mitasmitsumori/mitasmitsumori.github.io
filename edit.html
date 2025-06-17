@@ -3,12 +3,41 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MiTAS 見積編集</title>
+  <title>見積編集</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    input, select { width: 100%; margin-bottom: 10px; padding: 8px; }
+    button { padding: 10px 20px; }
+  </style>
 </head>
 <body>
-  <h1>見積編集画面</h1>
-  <div id="estimateData"></div>
+  <h1>見積編集</h1>
+  <form id="editForm">
+    <label>建物構造：<select id="structure">
+      <option value="木造">木造</option>
+      <option value="RC造">RC造</option>
+      <option value="S造">S造</option>
+      <option value="軽量鉄骨造">軽量鉄骨造</option>
+    </select></label><br/>
 
+    <label>延床面積（㎡）：<input type="number" id="area" /></label><br/>
+    <label>現場住所：<input type="text" id="address" /></label><br/>
+    <label>足場面積（㎡）：<input type="number" id="scaffoldArea" /></label><br/>
+
+    <label>残置物の有無：
+      <input type="radio" name="leftovers" value="あり" />あり
+      <input type="radio" name="leftovers" value="なし" />なし
+    </label><br/>
+
+    <label>付帯工事の有無：
+      <input type="radio" name="additional" value="あり" />あり
+      <input type="radio" name="additional" value="なし" />なし
+    </label><br/>
+
+    <button type="submit">保存</button>
+  </form>
+
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
@@ -29,33 +58,39 @@
     const urlParams = new URLSearchParams(window.location.search);
     const docId = urlParams.get("id");
 
-    if (!docId) {
-      document.getElementById("estimateData").innerText = "IDが見つかりません。";
-    } else {
-      db.collection("estimates").doc(docId).get().then((doc) => {
+    if (docId) {
+      db.collection("estimates").doc(docId).get().then(doc => {
         if (doc.exists) {
           const data = doc.data();
-          const div = document.getElementById("estimateData");
-          div.innerHTML = `
-            <p><strong>建物構造:</strong> ${data.structure}</p>
-            <p><strong>延床面積:</strong> ${data.area} ㎡</p>
-            <p><strong>現場住所:</strong> ${data.address}</p>
-            <p><strong>足場面積:</strong> ${data.scaffoldArea || "未入力"} ㎡</p>
-            <p><strong>残置物:</strong> ${data.hasLeftovers || "未選択"}</p>
-            <p><strong>付帯工事:</strong> ${data.hasAdditionalWork || "未選択"}</p>
-            <p><strong>作成日時:</strong> ${data.createdAt.toDate().toLocaleString()}</p>
-            <br/>
-            <button onclick="generatePDF()">PDF出力（仮）</button>
-          `;
-        } else {
-          document.getElementById("estimateData").innerText = "見積が見つかりません。";
+          document.getElementById("structure").value = data.structure;
+          document.getElementById("area").value = data.area;
+          document.getElementById("address").value = data.address;
+          document.getElementById("scaffoldArea").value = data.scaffoldArea;
+          document.querySelector(`input[name="leftovers"][value="${data.hasLeftovers}"]`).checked = true;
+          document.querySelector(`input[name="additional"][value="${data.hasAdditionalWork}"]`).checked = true;
         }
       });
     }
 
-    function generatePDF() {
-      alert("PDF出力機能は今後追加予定です");
-    }
+    document.getElementById("editForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const updatedData = {
+        structure: document.getElementById("structure").value,
+        area: document.getElementById("area").value,
+        address: document.getElementById("address").value,
+        scaffoldArea: document.getElementById("scaffoldArea").value,
+        hasLeftovers: document.querySelector('input[name="leftovers"]:checked')?.value || "",
+        hasAdditionalWork: document.querySelector('input[name="additional"]:checked')?.value || ""
+      };
+
+      db.collection("estimates").doc(docId).update(updatedData).then(() => {
+        alert("保存しました");
+        window.location.href = "list.html";
+      }).catch(err => {
+        alert("エラー: " + err.message);
+      });
+    });
   </script>
 </body>
 </html>
