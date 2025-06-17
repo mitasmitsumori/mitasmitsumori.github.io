@@ -33,13 +33,13 @@
     <tr><td>産廃処分費（ガラス）</td><td id="glassWasteCost"></td></tr>
     <tr><td>産廃処分費（陶器）</td><td id="ceramicWasteCost"></td></tr>
     <tr><td>有価物買取（鉄）</td><td id="ironValue"></td></tr>
-<tr><td>有価物買取（アルミ）</td><td id="aluminumValue"></td></tr>
+    <tr><td>有価物買取（アルミ）</td><td id="aluminumValue"></td></tr>
+    <tr><td><strong>合計金額（税抜）</strong></td><td id="totalCost" style="font-weight:bold;"></td></tr>
   </table>
 
   <script>
     const params = new URLSearchParams(window.location.search);
 
-    // 入力値取得
     const structure = params.get("structure") || "木造";
     const area = parseFloat(params.get("area") || 0);
     const address = params.get("address") || "";
@@ -47,7 +47,6 @@
     const leftovers = params.get("leftovers") || "";
     const additional = params.get("additional") || "";
 
-    // 表示反映
     document.getElementById("structure").textContent = structure;
     document.getElementById("area").textContent = area || "未入力";
     document.getElementById("address").textContent = address;
@@ -55,7 +54,6 @@
     document.getElementById("leftovers").textContent = leftovers;
     document.getElementById("additional").textContent = additional;
 
-    // 自動計算（解体・足場・重機・アスベスト）
     const unitPrices = {
       "木造": 33000 / 3.3,
       "RC造": 50000 / 3.3,
@@ -65,7 +63,7 @@
 
     const demolitionCost = Math.round(area * unitPrices[structure]);
     const scaffoldCost = Math.round(scaffold * 600);
-    const machineCost = 14000; // 固定
+    const machineCost = 14000;
     const asbestosCost = 90000;
 
     document.getElementById("demolitionCost").textContent = `${demolitionCost.toLocaleString()} 円`;
@@ -73,7 +71,6 @@
     document.getElementById("machineCost").textContent = `${machineCost.toLocaleString()} 円`;
     document.getElementById("asbestosCost").textContent = `${asbestosCost.toLocaleString()} 円`;
 
-    // 産廃処分費計算
     const wasteUnitPrices = {
       wood: 16,
       board: 35,
@@ -87,14 +84,29 @@
       const qty = parseFloat(params.get(paramKey) || 0);
       const cost = Math.round(qty * wasteUnitPrices[type]);
       document.getElementById(elementId).textContent = cost.toLocaleString() + " 円";
+      return cost;
     }
 
-    calcWasteCost("wood", "woodWaste", "woodWasteCost");
-    calcWasteCost("board", "boardWaste", "boardWasteCost");
-    calcWasteCost("plastic", "plasticWaste", "plasticWasteCost");
-    calcWasteCost("rubble", "rubbleWaste", "rubbleWasteCost");
-    calcWasteCost("glass", "glassWaste", "glassWasteCost");
-    calcWasteCost("ceramic", "ceramicWaste", "ceramicWasteCost");
+    const woodWaste = calcWasteCost("wood", "woodWaste", "woodWasteCost");
+    const boardWaste = calcWasteCost("board", "boardWaste", "boardWasteCost");
+    const plasticWaste = calcWasteCost("plastic", "plasticWaste", "plasticWasteCost");
+    const rubbleWaste = calcWasteCost("rubble", "rubbleWaste", "rubbleWasteCost");
+    const glassWaste = calcWasteCost("glass", "glassWaste", "glassWasteCost");
+    const ceramicWaste = calcWasteCost("ceramic", "ceramicWaste", "ceramicWasteCost");
+
+    // 有価物（買取）金額は現時点では表示のみ（減額処理は次のステップ）
+    const ironValue = parseFloat(params.get("ironWeight") || 0) * 25;
+    const aluminumValue = parseFloat(params.get("aluminumWeight") || 0) * 100;
+
+    document.getElementById("ironValue").textContent = `${Math.round(ironValue).toLocaleString()} 円`;
+    document.getElementById("aluminumValue").textContent = `${Math.round(aluminumValue).toLocaleString()} 円`;
+
+    // 合計金額（値引きなし・減額なし）
+    const totalCost = demolitionCost + scaffoldCost + machineCost + asbestosCost +
+                      woodWaste + boardWaste + plasticWaste +
+                      rubbleWaste + glassWaste + ceramicWaste;
+
+    document.getElementById("totalCost").textContent = `${totalCost.toLocaleString()} 円`;
   </script>
 </body>
 </html>
