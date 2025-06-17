@@ -1,36 +1,35 @@
 // settings.js
 
-const PRICES = {
-  demolitionPerTsubo: {
-    "木造": 33000,
-    "RC造": 50000,
-    "S造": 33000,
-    "軽量鉄骨造": 33000,
+const UNIT_PRICES = {
+  demolition: {
+    木造: 33000,
+    RC造: 50000,
+    S造: 33000,
+    軽量鉄骨造: 33000
   },
-  scaffoldPerM2: 600,
+  scaffold: 600,
   asbestosSurvey: 90000,
   machineTransport: {
-    short: 14000,  // 10km以内
-    medium: 18000, // 10km以上
-    long: 35000,   // 50〜60km
+    under10km: 14000,
+    over10km: 18000
   },
-  wasteDisposal: {
-    wood: 16,
-    board: 35,
-    plastic: 50,
-    rubble: 2,
-    glass: 10,
-    ceramic: 20,
+  waste: {
+    木くず: 16,
+    ボード類: 35,
+    廃プラ類: 50,
+    ガラ: 2,
+    ガラス: 10,
+    陶器: 20
   },
-  resaleMaterials: {
-    iron: 25,
-    aluminum: 100,
+  valuable: {
+    鉄: 25,
+    アルミ: 100
   },
-  transportation: {
-    wood: 2000,
-    concrete: 1000,
-    plastic: 2000,
-    glassCeramic: 2000,
-    board: 2000,
+  transportVolume: {
+    木くず: 2000,
+    コンクリート: 1000,
+    廃プラ: 2000,
+    ガラス陶器: 2000,
+    石膏ボード: 2000
   }
 };
