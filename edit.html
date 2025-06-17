@@ -1,115 +1,95 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>MiTAS 見積編集</title>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    input, select { margin: 4px 0; padding: 4px; width: 100%; max-width: 400px; }
-    label { display: block; margin-top: 10px; }
-    button { margin-top: 20px; padding: 10px 20px; }
-  </style>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <title>見積編集 - MiTAS</title>
 </head>
 <body>
   <h1>見積編集</h1>
   <form id="editForm">
     <label>建物構造：
-      <select id="structure">
-        <option value="木造">木造</option>
-        <option value="RC造">RC造</option>
-        <option value="S造">S造</option>
-        <option value="軽量鉄骨造">軽量鉄骨造</option>
-      </select>
-    </label>
-
-    <label>延床面積（㎡）：<input type="number" id="area" /></label>
-    <label>現場住所：<input type="text" id="address" /></label>
-    <label>足場面積（㎡）：<input type="number" id="scaffold" /></label>
-
+      <input type="text" id="structure" />
+    </label><br/>
+    <label>延床面積（㎡）：
+      <input type="number" id="area" />
+    </label><br/>
+    <label>現場住所：
+      <input type="text" id="address" />
+    </label><br/>
+    <label>足場面積（㎡）：
+      <input type="number" id="scaffoldArea" />
+    </label><br/>
     <label>残置物の有無：
-      <select id="leftovers">
-        <option value="あり">あり</option>
-        <option value="なし">なし</option>
-      </select>
-    </label>
-
+      <input type="text" id="leftovers" />
+    </label><br/>
     <label>付帯工事の有無：
-      <select id="additional">
-        <option value="あり">あり</option>
-        <option value="なし">なし</option>
-      </select>
-    </label>
+      <input type="text" id="additional" />
+    </label><br/>
 
-    <label>木くず（kg）：<input type="number" id="woodWaste" /></label>
-    <label>ボード類（kg）：<input type="number" id="boardWaste" /></label>
-    <label>廃プラ類（kg）：<input type="number" id="plasticWaste" /></label>
-    <label>ガラ（kg）：<input type="number" id="rubbleWaste" /></label>
-    <label>ガラス（kg）：<input type="number" id="glassWaste" /></label>
-    <label>陶器（kg）：<input type="number" id="ceramicWaste" /></label>
-
-    <button type="submit">保存</button>
-    <button type="button" onclick="goToEstimate()">内訳を見る</button>
+    <button type="submit">更新</button>
   </form>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAN1cDb1yBdYBzEXQ2CD8anlih7YuPXggo",
       authDomain: "mitas-estimate.firebaseapp.com",
-      projectId: "mitas-estimate"
+      projectId: "mitas-estimate",
+      storageBucket: "mitas-estimate.appspot.com",
+      messagingSenderId: "889863551826",
+      appId: "1:889863551826:web:71577461b5b9d810d4188b",
+      measurementId: "G-Y0H10QQQ16"
     };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
     const urlParams = new URLSearchParams(window.location.search);
     const docId = urlParams.get("id");
-    const form = document.getElementById("editForm");
 
-    if (docId) {
-      db.collection("estimates").doc(docId).get().then(doc => {
-        if (doc.exists) {
-          const d = doc.data();
-          form.structure.value = d.structure || "";
-          form.area.value = d.area || "";
-          form.address.value = d.address || "";
-          form.scaffold.value = d.scaffoldArea || "";
-          form.leftovers.value = d.hasLeftovers || "";
-          form.additional.value = d.hasAdditionalWork || "";
-        }
-      });
-    }
+    const structureInput = document.getElementById("structure");
+    const areaInput = document.getElementById("area");
+    const addressInput = document.getElementById("address");
+    const scaffoldInput = document.getElementById("scaffoldArea");
+    const leftoversInput = document.getElementById("leftovers");
+    const additionalInput = document.getElementById("additional");
 
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-
-      const updated = {
-        structure: form.structure.value,
-        area: form.area.value,
-        address: form.address.value,
-        scaffoldArea: form.scaffold.value,
-        hasLeftovers: form.leftovers.value,
-        hasAdditionalWork: form.additional.value,
-        woodWaste: form.woodWaste.value,
-        boardWaste: form.boardWaste.value,
-        plasticWaste: form.plasticWaste.value,
-        rubbleWaste: form.rubbleWaste.value,
-        glassWaste: form.glassWaste.value,
-        ceramicWaste: form.ceramicWaste.value,
-        updatedAt: new Date()
-      };
-
-      db.collection("estimates").doc(docId).update(updated).then(() => {
-        alert("保存しました");
-      });
+    // 編集対象のデータ取得
+    db.collection("estimates").doc(docId).get().then((doc) => {
+      if (doc.exists) {
+        const data = doc.data();
+        structureInput.value = data.structure;
+        areaInput.value = data.area;
+        addressInput.value = data.address;
+        scaffoldInput.value = data.scaffoldArea;
+        leftoversInput.value = data.hasLeftovers;
+        additionalInput.value = data.hasAdditionalWork;
+      } else {
+        alert("データが存在しません");
+      }
     });
 
-    function goToEstimate() {
-      if (docId) {
-        window.location.href = `uchiwake.html?id=${docId}`;
-      }
-    }
+    document.getElementById("editForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      db.collection("estimates").doc(docId).update({
+        structure: structureInput.value,
+        area: areaInput.value,
+        address: addressInput.value,
+        scaffoldArea: scaffoldInput.value,
+        hasLeftovers: leftoversInput.value,
+        hasAdditionalWork: additionalInput.value,
+      }).then(() => {
+        alert("更新が完了しました");
+        window.location.href = "list.html";
+      }).catch((error) => {
+        alert("更新失敗: " + error);
+      });
+    });
   </script>
 </body>
 </html>
