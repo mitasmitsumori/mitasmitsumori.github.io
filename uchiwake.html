@@ -1,52 +1,76 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MiTAS 見積内訳</title>
 </head>
 <body>
-  <h1>見積内訳ページ</h1>
-  <div id="estimateDetails"></div>
+  <h1>御見積内訳書</h1>
+  <div id="summary"></div>
 
   <script>
-    // URLからクエリパラメータを取得
     const params = new URLSearchParams(window.location.search);
-
-    // パラメータ取得
     const structure = params.get("structure");
-    const area = params.get("area");
-    const address = params.get("address");
-    const scaffold = params.get("scaffold");
-    const leftovers = params.get("leftovers");
-    const additional = params.get("additional");
-    const woodWaste = params.get("woodWaste");
-    const boardWaste = params.get("boardWaste");
-    const plasticWaste = params.get("plasticWaste");
-    const rubbleWaste = params.get("rubbleWaste");
-    const glassWaste = params.get("glassWaste");
-    const ceramicWaste = params.get("ceramicWaste");
+    const area = parseFloat(params.get("area")) || 0;
+    const scaffoldArea = parseFloat(params.get("scaffold")) || 0;
+    const address = params.get("address") || "";
+    const leftovers = params.get("leftovers") || "";
+    const additional = params.get("additional") || "";
 
-    // 表示用HTML生成
-    const detailHTML = `
-      <p><strong>建物構造：</strong>${structure}</p>
-      <p><strong>延床面積：</strong>${area} ㎡</p>
-      <p><strong>現場住所：</strong>${address}</p>
-      <p><strong>足場面積：</strong>${scaffold} ㎡</p>
-      <p><strong>残置物の有無：</strong>${leftovers}</p>
-      <p><strong>付帯工事の有無：</strong>${additional}</p>
-      <h3>発生材（kg）</h3>
-      <ul>
-        <li>木くず：${woodWaste} kg</li>
-        <li>ボード類：${boardWaste} kg</li>
-        <li>廃プラ類：${plasticWaste} kg</li>
-        <li>ガラ：${rubbleWaste} kg</li>
-        <li>ガラス：${glassWaste} kg</li>
-        <li>陶器：${ceramicWaste} kg</li>
-      </ul>
+    const wood = parseFloat(params.get("woodWaste")) || 0;
+    const board = parseFloat(params.get("boardWaste")) || 0;
+    const plastic = parseFloat(params.get("plasticWaste")) || 0;
+    const rubble = parseFloat(params.get("rubbleWaste")) || 0;
+    const glass = parseFloat(params.get("glassWaste")) || 0;
+    const ceramic = parseFloat(params.get("ceramicWaste")) || 0;
+
+    // 単価定義
+    const unitPrice = {
+      demolition: { "木造": 33000, "RC造": 50000, "S造": 33000, "軽量鉄骨造": 33000 },
+      scaffold: 600,
+      asbestosSurvey: 90000,
+      transport: 14000, // ※今回は固定（距離判別は後日）
+      waste: {
+        wood: 16,
+        board: 35,
+        plastic: 50,
+        rubble: 2,
+        glass: 10,
+        ceramic: 20
+      }
+    };
+
+    // 自動計算
+    const demolitionCost = Math.round(area * unitPrice.demolition[structure] * 0.3025); // ㎡→坪換算
+    const scaffoldCost = Math.round(scaffoldArea * unitPrice.scaffold);
+    const asbestosCost = unitPrice.asbestosSurvey;
+    const transportCost = unitPrice.transport;
+    const wasteCost =
+      Math.round(wood * unitPrice.waste.wood) +
+      Math.round(board * unitPrice.waste.board) +
+      Math.round(plastic * unitPrice.waste.plastic) +
+      Math.round(rubble * unitPrice.waste.rubble) +
+      Math.round(glass * unitPrice.waste.glass) +
+      Math.round(ceramic * unitPrice.waste.ceramic);
+
+    const total = demolitionCost + scaffoldCost + asbestosCost + transportCost + wasteCost;
+
+    // 表示
+    document.getElementById("summary").innerHTML = `
+      <p>現場住所：${address}</p>
+      <p>構造：${structure}</p>
+      <p>延床面積：${area}㎡</p>
+      <p>足場面積：${scaffoldArea}㎡</p>
+      <hr/>
+      <p>■ 解体工事費：${demolitionCost.toLocaleString()}円</p>
+      <p>■ 足場費：${scaffoldCost.toLocaleString()}円</p>
+      <p>■ アスベスト調査費：${asbestosCost.toLocaleString()}円</p>
+      <p>■ 重機回送費：${transportCost.toLocaleString()}円</p>
+      <p>■ 産廃処分費：${wasteCost.toLocaleString()}円</p>
+      <hr/>
+      <h3>合計：${total.toLocaleString()}円（税別）</h3>
     `;
-
-    document.getElementById("estimateDetails").innerHTML = detailHTML;
   </script>
 </body>
 </html>
