@@ -3,45 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MiTAS 内訳書</title>
+  <title>MiTAS 見積内訳</title>
 </head>
 <body>
-  <h1>MiTAS 内訳書</h1>
-
-  <div id="estimateDetails">
-    <p><strong>建物構造：</strong><span id="structure"></span></p>
-    <p><strong>延床面積（㎡）：</strong><span id="area"></span></p>
-    <p><strong>現場住所：</strong><span id="address"></span></p>
-    <p><strong>足場面積（㎡）：</strong><span id="scaffold"></span></p>
-    <p><strong>残置物：</strong><span id="leftovers"></span></p>
-    <p><strong>付帯工事：</strong><span id="additional"></span></p>
-  </div>
-
-  <h3>発生材</h3>
-  <ul>
-    <li>木くず（kg）：<span id="woodWaste"></span></li>
-    <li>ボード類（kg）：<span id="boardWaste"></span></li>
-    <li>廃プラ類（kg）：<span id="plasticWaste"></span></li>
-    <li>ガラ（kg）：<span id="rubbleWaste"></span></li>
-    <li>ガラス（kg）：<span id="glassWaste"></span></li>
-    <li>陶器（kg）：<span id="ceramicWaste"></span></li>
-  </ul>
+  <h1>見積内訳ページ</h1>
+  <div id="estimateDetails"></div>
 
   <script>
+    // URLからクエリパラメータを取得
     const params = new URLSearchParams(window.location.search);
-    document.getElementById("structure").textContent = params.get("structure") || "－";
-    document.getElementById("area").textContent = params.get("area") || "－";
-    document.getElementById("address").textContent = params.get("address") || "－";
-    document.getElementById("scaffold").textContent = params.get("scaffold") || "－";
-    document.getElementById("leftovers").textContent = params.get("leftovers") || "－";
-    document.getElementById("additional").textContent = params.get("additional") || "－";
 
-    document.getElementById("woodWaste").textContent = params.get("woodWaste") || "0";
-    document.getElementById("boardWaste").textContent = params.get("boardWaste") || "0";
-    document.getElementById("plasticWaste").textContent = params.get("plasticWaste") || "0";
-    document.getElementById("rubbleWaste").textContent = params.get("rubbleWaste") || "0";
-    document.getElementById("glassWaste").textContent = params.get("glassWaste") || "0";
-    document.getElementById("ceramicWaste").textContent = params.get("ceramicWaste") || "0";
+    // パラメータ取得
+    const structure = params.get("structure");
+    const area = params.get("area");
+    const address = params.get("address");
+    const scaffold = params.get("scaffold");
+    const leftovers = params.get("leftovers");
+    const additional = params.get("additional");
+    const woodWaste = params.get("woodWaste");
+    const boardWaste = params.get("boardWaste");
+    const plasticWaste = params.get("plasticWaste");
+    const rubbleWaste = params.get("rubbleWaste");
+    const glassWaste = params.get("glassWaste");
+    const ceramicWaste = params.get("ceramicWaste");
+
+    // 表示用HTML生成
+    const detailHTML = `
+      <p><strong>建物構造：</strong>${structure}</p>
+      <p><strong>延床面積：</strong>${area} ㎡</p>
+      <p><strong>現場住所：</strong>${address}</p>
+      <p><strong>足場面積：</strong>${scaffold} ㎡</p>
+      <p><strong>残置物の有無：</strong>${leftovers}</p>
+      <p><strong>付帯工事の有無：</strong>${additional}</p>
+      <h3>発生材（kg）</h3>
+      <ul>
+        <li>木くず：${woodWaste} kg</li>
+        <li>ボード類：${boardWaste} kg</li>
+        <li>廃プラ類：${plasticWaste} kg</li>
+        <li>ガラ：${rubbleWaste} kg</li>
+        <li>ガラス：${glassWaste} kg</li>
+        <li>陶器：${ceramicWaste} kg</li>
+      </ul>
+    `;
+
+    document.getElementById("estimateDetails").innerHTML = detailHTML;
   </script>
 </body>
 </html>
