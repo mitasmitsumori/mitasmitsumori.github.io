@@ -5,40 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MiTAS 見積内訳</title>
   <style>
-    body {
-      font-family: 'Helvetica Neue', sans-serif;
-      background-color: #ffffff;
-      padding: 2rem;
-    }
-    h1 {
-      color: #2c3e50;
-      text-align: center;
-    }
-    .item {
-      margin-bottom: 1rem;
-    }
-    .item label {
-      font-weight: bold;
-    }
+    body { font-family: sans-serif; padding: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f0f0f0; }
   </style>
 </head>
 <body>
   <h1>見積内訳</h1>
-  <div class="item"><label>建物構造：</label><span id="structure"></span></div>
-  <div class="item"><label>延床面積：</label><span id="area"></span> ㎡</div>
-  <div class="item"><label>足場面積：</label><span id="scaffold"></span> ㎡</div>
-  <div class="item"><label>現場住所：</label><span id="address"></span></div>
-  <div class="item"><label>残置物：</label><span id="zanchi"></span></div>
-  <div class="item"><label>付帯工事：</label><span id="futai"></span></div>
+  <table>
+    <tr><th>項目</th><th>内容</th></tr>
+    <tr><td>建物構造</td><td id="structure"></td></tr>
+    <tr><td>延床面積（㎡）</td><td id="area"></td></tr>
+    <tr><td>現場住所</td><td id="address"></td></tr>
+    <tr><td>足場面積（㎡）</td><td id="scaffold"></td></tr>
+    <tr><td>残置物の有無</td><td id="leftovers"></td></tr>
+    <tr><td>付帯工事の有無</td><td id="additional"></td></tr>
+  </table>
 
   <script>
     const params = new URLSearchParams(window.location.search);
-    document.getElementById("structure").textContent = params.get("structure") || "（未入力）";
-    document.getElementById("area").textContent = params.get("area") || "（未入力）";
-    document.getElementById("scaffold").textContent = params.get("scaffold") || "（未入力）";
-    document.getElementById("address").textContent = params.get("address") || "（未入力）";
-    document.getElementById("zanchi").textContent = params.get("zanchi") || "（未入力）";
-    document.getElementById("futai").textContent = params.get("futai") || "（未入力）";
+
+    document.getElementById("structure").textContent = params.get("structure") || "未入力";
+    document.getElementById("area").textContent = params.get("area") || "未入力";
+    document.getElementById("address").textContent = params.get("address") || "未入力";
+    document.getElementById("scaffold").textContent = params.get("scaffold") || "未入力";
+    document.getElementById("leftovers").textContent = params.get("leftovers") || "未入力";
+    document.getElementById("additional").textContent = params.get("additional") || "未入力";
   </script>
 </body>
 </html>
