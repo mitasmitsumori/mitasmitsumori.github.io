@@ -2,20 +2,20 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>見積編集 - MiTAS</title>
+  <title>MiTAS 見積編集</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
-    body { font-family: 'IPAexMincho', serif; padding: 20px; }
-    h1 { font-size: 22px; margin-bottom: 20px; }
+    body { font-family: 'Arial', sans-serif; margin: 20px; background: #f8f8f8; }
+    h1 { color: #2c3e50; }
     label { display: block; margin-top: 10px; }
-    input, select { width: 100%; padding: 6px; font-size: 14px; margin-top: 4px; }
-    button { margin-top: 20px; padding: 10px 20px; font-size: 14px; }
+    input, select { width: 100%; padding: 8px; margin-top: 5px; }
+    button { margin-top: 20px; padding: 10px 20px; background: #2c3e50; color: #fff; border: none; cursor: pointer; }
+    button:hover { opacity: 0.9; }
   </style>
 </head>
 <body>
-  <h1>見積編集</h1>
+  <h1>見積編集（MiTAS）</h1>
   <form id="editForm">
-    <label>現場住所：<input type="text" id="address" /></label>
     <label>建物構造：
       <select id="structure">
         <option value="木造">木造</option>
@@ -24,15 +24,39 @@
         <option value="軽量鉄骨造">軽量鉄骨造</option>
       </select>
     </label>
+
     <label>延床面積（㎡）：<input type="number" id="area" /></label>
-    <label>足場面積（㎡）：<input type="number" id="scaffold" /></label>
-    <button type="submit">保存</button>
+    <label>現場住所：<input type="text" id="address" /></label>
+    <label>足場面積（㎡）：<input type="number" id="scaffoldArea" /></label>
+
+    <label>残置物の有無：
+      <select id="leftovers">
+        <option value="あり">あり</option>
+        <option value="なし">なし</option>
+      </select>
+    </label>
+
+    <label>付帯工事の有無：
+      <select id="additional">
+        <option value="あり">あり</option>
+        <option value="なし">なし</option>
+      </select>
+    </label>
+
+    <h3>発生材（kg）</h3>
+    <label>木くず：<input type="number" id="woodWaste" /></label>
+    <label>ボード類：<input type="number" id="boardWaste" /></label>
+    <label>廃プラ類：<input type="number" id="plasticWaste" /></label>
+    <label>ガラ：<input type="number" id="rubbleWaste" /></label>
+    <label>ガラス：<input type="number" id="glassWaste" /></label>
+    <label>陶器：<input type="number" id="ceramicWaste" /></label>
+
+    <button type="submit">保存して一覧に戻る</button>
   </form>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAN1cDb1yBdYBzEXQ2CD8anlih7YuPXggo",
@@ -49,32 +73,47 @@
 
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
+
     const form = document.getElementById("editForm");
 
-    if (id) {
-      db.collection("estimates").doc(id).get().then((doc) => {
-        if (doc.exists) {
-          const data = doc.data();
-          document.getElementById("address").value = data.address || "";
-          document.getElementById("structure").value = data.structure || "木造";
-          document.getElementById("area").value = data.area || 0;
-          document.getElementById("scaffold").value = data.scaffold || 0;
-        }
-      });
-    }
+    db.collection("estimates").doc(id).get().then(doc => {
+      if (doc.exists) {
+        const data = doc.data();
+        document.getElementById("structure").value = data.structure;
+        document.getElementById("area").value = data.area;
+        document.getElementById("address").value = data.address;
+        document.getElementById("scaffoldArea").value = data.scaffoldArea;
+        document.getElementById("leftovers").value = data.hasLeftovers;
+        document.getElementById("additional").value = data.hasAdditionalWork;
+        document.getElementById("woodWaste").value = data.woodWaste || 0;
+        document.getElementById("boardWaste").value = data.boardWaste || 0;
+        document.getElementById("plasticWaste").value = data.plasticWaste || 0;
+        document.getElementById("rubbleWaste").value = data.rubbleWaste || 0;
+        document.getElementById("glassWaste").value = data.glassWaste || 0;
+        document.getElementById("ceramicWaste").value = data.ceramicWaste || 0;
+      }
+    });
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      const updated = {
-        address: document.getElementById("address").value,
+      const updatedData = {
         structure: document.getElementById("structure").value,
         area: parseFloat(document.getElementById("area").value),
-        scaffold: parseFloat(document.getElementById("scaffold").value),
+        address: document.getElementById("address").value,
+        scaffoldArea: parseFloat(document.getElementById("scaffoldArea").value),
+        hasLeftovers: document.getElementById("leftovers").value,
+        hasAdditionalWork: document.getElementById("additional").value,
+        woodWaste: parseFloat(document.getElementById("woodWaste").value),
+        boardWaste: parseFloat(document.getElementById("boardWaste").value),
+        plasticWaste: parseFloat(document.getElementById("plasticWaste").value),
+        rubbleWaste: parseFloat(document.getElementById("rubbleWaste").value),
+        glassWaste: parseFloat(document.getElementById("glassWaste").value),
+        ceramicWaste: parseFloat(document.getElementById("ceramicWaste").value),
         updatedAt: new Date()
       };
-      db.collection("estimates").doc(id).update(updated).then(() => {
+      db.collection("estimates").doc(id).update(updatedData).then(() => {
         alert("保存しました");
-        location.href = "list.html";
+        window.location.href = "list.html";
       });
     });
   </script>
