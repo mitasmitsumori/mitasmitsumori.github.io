@@ -3,41 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <title>見積編集 - MiTAS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { font-family: 'IPAexMincho', serif; padding: 20px; }
-    h1 { text-align: center; }
-    form { max-width: 600px; margin: 0 auto; }
-    label { display: block; margin-top: 15px; font-weight: bold; }
-    input, select { width: 100%; padding: 8px; margin-top: 5px; font-size: 14px; }
-    button { margin-top: 20px; padding: 10px; font-size: 16px; }
+    body { font-family: 'IPAexMincho', serif; padding: 20px; background: #f5f5f5; }
+    h1 { text-align: center; color: #2c3e50; }
+    label { display: block; margin-top: 10px; }
+    input, select, textarea {
+      width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box;
+    }
+    button {
+      margin-top: 20px; padding: 10px 20px; background: #2c3e50; color: white;
+      border: none; font-size: 16px; cursor: pointer;
+    }
+    button:hover { opacity: 0.9; }
   </style>
 </head>
 <body>
-  <h1>見積内容の編集</h1>
+  <h1>見積編集 - MiTAS</h1>
   <form id="estimateForm">
-    <label for="address">現場住所</label>
-    <input type="text" id="address" name="address" required />
-
-    <label for="structure">建物構造</label>
-    <select id="structure" name="structure">
-      <option value="木造">木造</option>
-      <option value="RC造">RC造</option>
-      <option value="S造">S造</option>
-      <option value="軽量鉄骨造">軽量鉄骨造</option>
-    </select>
-
-    <label for="area">延床面積（㎡）</label>
-    <input type="number" id="area" name="area" step="0.1" required />
-
+    <label>お客様名<input type="text" id="customerName" required /></label>
+    <label>工事名<input type="text" id="projectName" required /></label>
+    <label>現場住所<input type="text" id="address" required /></label>
+    <label>作成日<input type="date" id="date" required /></label>
     <button type="submit">保存する</button>
   </form>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAN1cDb1yBdYBzEXQ2CD8anlih7YuPXggo",
       authDomain: "mitas-estimate.firebaseapp.com",
@@ -47,36 +41,37 @@
       appId: "1:889863551826:web:71577461b5b9d810d4188b",
       measurementId: "G-Y0H10QQQ16"
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
-    const form = document.getElementById("estimateForm");
 
     if (id) {
-      db.collection("estimates").doc(id).get().then(doc => {
-        if (doc.exists) {
-          const data = doc.data();
-          form.address.value = data.address || "";
-          form.structure.value = data.structure || "";
-          form.area.value = data.area || "";
+      const docRef = doc(db, "estimates", id);
+      getDoc(docRef).then((docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          document.getElementById("customerName").value = data.customerName || "";
+          document.getElementById("projectName").value = data.projectName || "";
+          document.getElementById("address").value = data.address || "";
+          document.getElementById("date").value = data.date || "";
         }
       });
-    }
 
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const data = {
-        address: form.address.value,
-        structure: form.structure.value,
-        area: parseFloat(form.area.value || 0),
-      };
-      db.collection("estimates").doc(id).update(data).then(() => {
-        alert("保存が完了しました！");
+      document.getElementById("estimateForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        await updateDoc(docRef, {
+          customerName: document.getElementById("customerName").value,
+          projectName: document.getElementById("projectName").value,
+          address: document.getElementById("address").value,
+          date: document.getElementById("date").value,
+        });
+        alert("更新完了しました");
         window.location.href = "list.html";
       });
-    });
+    }
   </script>
 </body>
 </html>
