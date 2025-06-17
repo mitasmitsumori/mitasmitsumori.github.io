@@ -4,34 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>見積一覧 - MiTAS</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    h1 { font-size: 24px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    th { background-color: #f0f0f0; }
-    button { padding: 4px 8px; }
-  </style>
 </head>
 <body>
   <h1>見積一覧</h1>
-  <table>
-    <thead>
-      <tr>
-        <th>構造</th>
-        <th>面積</th>
-        <th>住所</th>
-        <th>作成日時</th>
-        <th>詳細</th>
-      </tr>
-    </thead>
-    <tbody id="estimateTable"></tbody>
-  </table>
+  <ul id="estimateList"></ul>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAN1cDb1yBdYBzEXQ2CD8anlih7YuPXggo",
@@ -46,37 +26,19 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const table = document.getElementById("estimateTable");
+    const list = document.getElementById("estimateList");
 
-    db.collection("estimates").orderBy("createdAt", "desc").get().then(snapshot => {
-      snapshot.forEach(doc => {
+    db.collection("estimates").orderBy("createdAt", "desc").get().then((querySnapshot) => {
+      querySnapshot.forEach((doc) => {
         const data = doc.data();
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${data.structure || ""}</td>
-          <td>${data.area || ""}㎡</td>
-          <td>${data.address || ""}</td>
-          <td>${data.createdAt?.toDate().toLocaleString() || ""}</td>
-          <td><button onclick="viewDetail('${doc.id}')">詳細</button></td>
+        const li = document.createElement("li");
+        li.innerHTML = `
+          ${data.address || "無題"}（${data.createdAt.toDate().toLocaleString()}）<br>
+          <a href="edit.html?id=${doc.id}">詳細を見る</a>
         `;
-        table.appendChild(tr);
+        list.appendChild(li);
       });
     });
-
-    function viewDetail(id) {
-      db.collection("estimates").doc(id).get().then(doc => {
-        const data = doc.data();
-        const params = new URLSearchParams({
-          structure: data.structure || "",
-          area: data.area || "",
-          address: data.address || "",
-          scaffold: data.scaffoldArea || "",
-          leftovers: data.hasLeftovers || "",
-          additional: data.hasAdditionalWork || "",
-        });
-        window.location.href = `uchiwake.html?${params.toString()}`;
-      });
-    }
   </script>
 </body>
 </html>
