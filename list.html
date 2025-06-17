@@ -10,6 +10,14 @@
     table { border-collapse: collapse; width: 100%; margin-top: 20px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
     th { background-color: #f0f0f0; }
+    a.button {
+      display: inline-block;
+      padding: 6px 12px;
+      background-color: #2c3e50;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
@@ -20,6 +28,7 @@
       <th>面積</th>
       <th>住所</th>
       <th>作成日時</th>
+      <th>詳細</th>
     </tr>
   </table>
 
@@ -39,7 +48,6 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-
     const table = document.getElementById("estimateTable");
 
     db.collection("estimates")
@@ -49,12 +57,24 @@
       .then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
           const data = doc.data();
+          const id = doc.id;
+
           const row = document.createElement("tr");
+          const params = new URLSearchParams({
+            structure: data.structure || "",
+            area: data.area || "",
+            address: data.address || "",
+            scaffold: data.scaffoldArea || "",
+            leftovers: data.hasLeftovers || "",
+            additional: data.hasAdditionalWork || ""
+          });
+
           row.innerHTML = `
             <td>${data.structure || ""}</td>
             <td>${data.area || ""} ㎡</td>
             <td>${data.address || ""}</td>
             <td>${data.createdAt?.toDate().toLocaleString() || ""}</td>
+            <td><a class="button" href="uchiwake.html?${params.toString()}">→ 詳細</a></td>
           `;
           table.appendChild(row);
         });
