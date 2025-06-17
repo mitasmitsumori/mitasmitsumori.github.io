@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>御見積書（表紙）</title>
+  <style>
+    body {
+      font-family: 'IPAexMincho', serif;
+      padding: 30px;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+    .title {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    .block {
+      border: 1px solid #000;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .left-box {
+      width: 60%;
+      float: left;
+    }
+    .right-box {
+      width: 35%;
+      float: right;
+      text-align: left;
+    }
+    .clear {
+      clear: both;
+    }
+    .powered {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 12px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div id="content">
+    <div class="title">御見積書</div>
+
+    <div class="block">
+      <div><strong>お客様名：</strong><span id="customerName"></span> 様</div>
+    </div>
+
+    <div class="block left-box">
+      <div><strong>工事名：</strong><span id="projectName"></span></div>
+      <div><strong>工事場所：</strong><span id="projectLocation"></span></div>
+      <div><strong>工事期間：</strong><span id="projectPeriod"></span></div>
+      <div><strong>支払条件：</strong><span id="paymentTerms"></span></div>
+      <div><strong>見積有効期限：</strong><span id="estimateLimit"></span></div>
+      <div><strong>摘要：</strong><span id="remarks"></span></div>
+    </div>
+
+    <div class="block right-box">
+      <div><strong>株式会社丸解</strong></div>
+      <div>代表取締役：薩摩 寅次郎</div>
+      <div>〒890-0000 鹿児島市〇〇町〇番地</div>
+      <div>TEL：099-123-4567</div>
+      <div>FAX：099-765-4321</div>
+      <div>許可番号：鹿児島県知事（般-●●）第12345号</div>
+    </div>
+
+    <div class="clear"></div>
+
+    <div class="block">
+      <div><strong>見積金額（税込）：</strong><span id="totalWithTax"></span> 円</div>
+      <div><strong>消費税：</strong><span id="taxAmount"></span> 円</div>
+    </div>
+  </div>
+
+  <div class="powered">Powered by MiTAS</div>
+
+  <!-- jsPDF & html2pdf -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    document.getElementById('customerName').textContent = urlParams.get('customerName') || '';
+    document.getElementById('projectName').textContent = urlParams.get('projectName') || '';
+    document.getElementById('projectLocation').textContent = urlParams.get('projectLocation') || '';
+    document.getElementById('projectPeriod').textContent = urlParams.get('projectPeriod') || '';
+    document.getElementById('paymentTerms').textContent = urlParams.get('paymentTerms') || '';
+    document.getElementById('estimateLimit').textContent = urlParams.get('estimateLimit') || '';
+    document.getElementById('remarks').textContent = urlParams.get('remarks') || '';
+    document.getElementById('totalWithTax').textContent = urlParams.get('totalWithTax') || '';
+    document.getElementById('taxAmount').textContent = urlParams.get('taxAmount') || '';
+
+    // 自動でPDF化してダウンロード
+    window.onload = () => {
+      html2pdf().from(document.getElementById('content')).save('御見積書.pdf');
+    };
+  </script>
+</body>
+</html>
