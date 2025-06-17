@@ -36,6 +36,7 @@
 
   <script>
     const params = new URLSearchParams(window.location.search);
+
     const structure = params.get("structure") || "木造";
     const area = parseFloat(params.get("area") || 0);
     const address = params.get("address") || "";
@@ -44,12 +45,13 @@
     const additional = params.get("additional") || "";
 
     document.getElementById("structure").textContent = structure;
-    document.getElementById("area").textContent = area || "未入力";
+    document.getElementById("area").textContent = area;
     document.getElementById("address").textContent = address;
-    document.getElementById("scaffold").textContent = scaffold || "未入力";
+    document.getElementById("scaffold").textContent = scaffold;
     document.getElementById("leftovers").textContent = leftovers;
     document.getElementById("additional").textContent = additional;
 
+    // 単価設定
     const unitPrices = {
       "木造": 33000 / 3.3,
       "RC造": 50000 / 3.3,
@@ -67,6 +69,7 @@
     document.getElementById("machineCost").textContent = `${machineCost.toLocaleString()} 円`;
     document.getElementById("asbestosCost").textContent = `${asbestosCost.toLocaleString()} 円`;
 
+    // 産廃単価
     const wasteUnitPrices = {
       wood: 16,
       board: 35,
@@ -76,10 +79,10 @@
       ceramic: 20
     };
 
-    function calcWasteCost(type, paramKey, elementId) {
-      const qty = parseFloat(params.get(paramKey) || 0);
+    function calcWasteCost(type, key, elementId) {
+      const qty = parseFloat(params.get(key) || 0);
       const cost = Math.round(qty * wasteUnitPrices[type]);
-      document.getElementById(elementId).textContent = cost.toLocaleString() + " 円";
+      document.getElementById(elementId).textContent = `${cost.toLocaleString()} 円`;
     }
 
     calcWasteCost("wood", "woodWaste", "woodWasteCost");
