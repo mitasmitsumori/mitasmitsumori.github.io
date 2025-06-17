@@ -3,11 +3,45 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>見積一覧 - MiTAS</title>
+  <title>MiTAS 見積一覧</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1em;
+    }
+    th, td {
+      border: 1px solid #999;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #eee;
+    }
+    a {
+      color: blue;
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-  <h1>見積一覧</h1>
-  <ul id="estimateList"></ul>
+  <h1>MiTAS 見積一覧</h1>
+  <table id="estimateTable">
+    <thead>
+      <tr>
+        <th>日付</th>
+        <th>構造</th>
+        <th>面積</th>
+        <th>現場住所</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -27,26 +61,26 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const listElement = document.getElementById("estimateList");
+    const tableBody = document.querySelector("tbody");
 
     db.collection("estimates").orderBy("createdAt", "desc").get().then((querySnapshot) => {
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <strong>構造：</strong>${data.structure}　
-          <strong>面積：</strong>${data.area}㎡　
-          <strong>住所：</strong>${data.address}<br/>
-          <button onclick="viewEstimate('${doc.id}')">詳細を見る</button>
+        const row = document.createElement("tr");
+
+        const createdAt = data.createdAt?.toDate?.().toLocaleString() || "日時なし";
+
+        row.innerHTML = `
+          <td>${createdAt}</td>
+          <td>${data.structure}</td>
+          <td>${data.area}㎡</td>
+          <td>${data.address}</td>
+          <td><a href="uchiwake.html?structure=${data.structure}&area=${data.area}&address=${data.address}&scaffold=${data.scaffoldArea || ""}&leftovers=${data.hasLeftovers || ""}&additional=${data.hasAdditionalWork || ""}">詳細を見る</a></td>
         `;
-        listElement.appendChild(li);
+
+        tableBody.appendChild(row);
       });
     });
-
-    function viewEstimate(id) {
-      // ID付きでedit.htmlへ遷移
-      window.location.href = `edit.html?id=${id}`;
-    }
   </script>
 </body>
 </html>
