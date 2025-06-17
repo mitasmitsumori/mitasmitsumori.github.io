@@ -1,34 +1,49 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>見積履歴一覧 - MiTAS</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>見積編集 - MiTAS</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; background: #f0f0f0; }
-    h1 { text-align: center; color: #2c3e50; }
-    table { width: 100%; border-collapse: collapse; background: #fff; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    th { background-color: #2c3e50; color: white; }
-    button { padding: 6px 10px; background: #2c3e50; color: #fff; border: none; cursor: pointer; }
+    body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+    h1 { color: #2c3e50; }
+    label { display: block; margin: 10px 0 5px; }
+    input, select, button { width: 100%; padding: 8px; margin-bottom: 10px; }
+    button { background-color: #2c3e50; color: white; border: none; cursor: pointer; }
   </style>
 </head>
 <body>
-  <h1>見積履歴一覧</h1>
-  <table>
-    <thead>
-      <tr>
-        <th>構造</th>
-        <th>延床面積</th>
-        <th>住所</th>
-        <th>作成日</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-    <tbody id="estimateList"></tbody>
-  </table>
+  <h1>見積編集</h1>
+  <form id="editForm">
+    <label>建物構造：
+      <select id="structure">
+        <option value="木造">木造</option>
+        <option value="RC造">RC造</option>
+        <option value="S造">S造</option>
+        <option value="軽量鉄骨造">軽量鉄骨造</option>
+      </select>
+    </label>
+    <label>延床面積（㎡）：<input type="number" id="area" required></label>
+    <label>現場住所：<input type="text" id="address" required></label>
+    <label>足場面積（㎡）：<input type="number" id="scaffold"></label>
+    <label>残置物の有無：
+      <select id="leftovers">
+        <option value="">選択</option>
+        <option value="あり">あり</option>
+        <option value="なし">なし</option>
+      </select>
+    </label>
+    <label>付帯工事の有無：
+      <select id="additional">
+        <option value="">選択</option>
+        <option value="あり">あり</option>
+        <option value="なし">なし</option>
+      </select>
+    </label>
+    <button type="submit">更新する</button>
+  </form>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   <script>
@@ -45,31 +60,42 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const listEl = document.getElementById("estimateList");
+    const params = new URLSearchParams(window.location.search);
+    const docId = params.get("id");
 
-    db.collection("estimates").orderBy("createdAt", "desc").get().then(snapshot => {
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const tr = document.createElement("tr");
-        const date = data.createdAt?.toDate?.().toLocaleDateString("ja-JP") || "―";
+    const structureEl = document.getElementById("structure");
+    const areaEl = document.getElementById("area");
+    const addressEl = document.getElementById("address");
+    const scaffoldEl = document.getElementById("scaffold");
+    const leftoversEl = document.getElementById("leftovers");
+    const additionalEl = document.getElementById("additional");
 
-        const params = new URLSearchParams({
-          structure: data.structure || "",
-          area: data.area || "",
-          address: data.address || "",
-          scaffold: data.scaffoldArea || "",
-          leftovers: data.hasLeftovers || "",
-          additional: data.hasAdditionalWork || ""
-        });
+    // 読み込み
+    db.collection("estimates").doc(docId).get().then(doc => {
+      const data = doc.data();
+      structureEl.value = data.structure;
+      areaEl.value = data.area;
+      addressEl.value = data.address;
+      scaffoldEl.value = data.scaffoldArea;
+      leftoversEl.value = data.hasLeftovers;
+      additionalEl.value = data.hasAdditionalWork;
+    });
 
-        tr.innerHTML = `
-          <td>${data.structure}</td>
-          <td>${data.area}㎡</td>
-          <td>${data.address}</td>
-          <td>${date}</td>
-          <td><a href="uchiwake.html?${params.toString()}"><button>詳細を見る</button></a></td>
-        `;
-        listEl.appendChild(tr);
+    // 更新処理
+    document.getElementById("editForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      db.collection("estimates").doc(docId).update({
+        structure: structureEl.value,
+        area: areaEl.value,
+        address: addressEl.value,
+        scaffoldArea: scaffoldEl.value,
+        hasLeftovers: leftoversEl.value,
+        hasAdditionalWork: additionalEl.value
+      }).then(() => {
+        alert("更新しました！");
+        location.href = "list.html";
+      }).catch(error => {
+        alert("更新エラー：" + error);
       });
     });
   </script>
