@@ -3,76 +3,106 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MiTAS 見積内訳</title>
+  <title>MiTAS 見積内訳書</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; background: #f8f8f8; }
-    h1 { color: #2c3e50; }
-    table { border-collapse: collapse; width: 100%; background: #fff; }
-    th, td { border: 1px solid #ccc; padding: 10px; }
-    th { background: #eee; }
+    body {
+      font-family: "IPAexMincho", serif;
+      margin: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1em;
+    }
+    th, td {
+      border: 1px solid #333;
+      padding: 8px;
+      text-align: left;
+    }
+    .total {
+      font-weight: bold;
+      font-size: 1.2em;
+      text-align: right;
+    }
   </style>
 </head>
 <body>
-  <h1>御見積内訳</h1>
+  <h1>御見積書</h1>
   <table id="estimateTable">
-    <tr><th>項目</th><th>金額（円）</th></tr>
+    <thead>
+      <tr>
+        <th>項目</th>
+        <th>数量</th>
+        <th>単価</th>
+        <th>金額</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>解体工事費</td><td id="areaCell"></td><td id="unitPriceCell"></td><td id="demolitionCostCell"></td></tr>
+      <tr><td>足場工事費</td><td id="scaffoldCell"></td><td>600円</td><td id="scaffoldCostCell"></td></tr>
+      <tr><td>アスベスト調査費</td><td>1式</td><td>90,000円</td><td>90,000円</td></tr>
+      <tr><td>産廃処分費（木くず）</td><td id="woodCell"></td><td>16円</td><td id="woodCostCell"></td></tr>
+      <tr><td>産廃処分費（ボード類）</td><td id="boardCell"></td><td>35円</td><td id="boardCostCell"></td></tr>
+      <tr><td>産廃処分費（廃プラ類）</td><td id="plasticCell"></td><td>50円</td><td id="plasticCostCell"></td></tr>
+      <tr><td>産廃処分費（ガラ）</td><td id="rubbleCell"></td><td>2円</td><td id="rubbleCostCell"></td></tr>
+      <tr><td>産廃処分費（ガラス）</td><td id="glassCell"></td><td>10円</td><td id="glassCostCell"></td></tr>
+      <tr><td>産廃処分費（陶器）</td><td id="ceramicCell"></td><td>20円</td><td id="ceramicCostCell"></td></tr>
+      <tr><td colspan="3" class="total">合計金額（税込）</td><td id="totalCell"></td></tr>
+    </tbody>
   </table>
 
-  <script src="settings.js"></script>
   <script>
-    const params = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams(window.location.search);
+    const structure = urlParams.get('structure');
+    const area = parseFloat(urlParams.get('area')) || 0;
+    const scaffold = parseFloat(urlParams.get('scaffold')) || 0;
+    const wood = parseFloat(urlParams.get('woodWaste')) || 0;
+    const board = parseFloat(urlParams.get('boardWaste')) || 0;
+    const plastic = parseFloat(urlParams.get('plasticWaste')) || 0;
+    const rubble = parseFloat(urlParams.get('rubbleWaste')) || 0;
+    const glass = parseFloat(urlParams.get('glassWaste')) || 0;
+    const ceramic = parseFloat(urlParams.get('ceramicWaste')) || 0;
 
-    // 入力値の取得
-    const structure = params.get("structure");
-    const area = parseFloat(params.get("area")) || 0;
-    const scaffold = parseFloat(params.get("scaffold")) || 0;
-    const wood = parseFloat(params.get("woodWaste")) || 0;
-    const board = parseFloat(params.get("boardWaste")) || 0;
-    const plastic = parseFloat(params.get("plasticWaste")) || 0;
-    const rubble = parseFloat(params.get("rubbleWaste")) || 0;
-    const glass = parseFloat(params.get("glassWaste")) || 0;
-    const ceramic = parseFloat(params.get("ceramicWaste")) || 0;
-
-    const table = document.getElementById("estimateTable");
-
-    function addRow(label, amount) {
-      const row = table.insertRow(-1);
-      row.innerHTML = `<td>${label}</td><td>${Math.round(amount).toLocaleString()} 円</td>`;
-    }
-
-    // 単価設定（今後は settings.js で切替可能）
     const unitPrices = {
-      demolition: { "木造": 33000 / 3.3, "RC造": 50000 / 3.3, "S造": 33000 / 3.3, "軽量鉄骨造": 33000 / 3.3 },
-      scaffold: 600,
-      asbestos: 90000,
-      machineShort: 14000,
-      machineLong: 18000,
-      waste: { wood: 16, board: 35, plastic: 50, rubble: 2, glass: 10, ceramic: 20 }
+      '木造': 33000,
+      'RC造': 50000,
+      'S造': 33000,
+      '軽量鉄骨造': 33000
     };
 
-    let total = 0;
+    const unitPrice = unitPrices[structure] || 0;
+    const demolitionCost = Math.round((area / 3.3) * unitPrice);
+    const scaffoldCost = Math.round(scaffold * 600);
+    const woodCost = Math.round(wood * 16);
+    const boardCost = Math.round(board * 35);
+    const plasticCost = Math.round(plastic * 50);
+    const rubbleCost = Math.round(rubble * 2);
+    const glassCost = Math.round(glass * 10);
+    const ceramicCost = Math.round(ceramic * 20);
 
-    const demolitionCost = area * unitPrices.demolition[structure];
-    addRow("解体工事費", demolitionCost); total += demolitionCost;
+    const total = demolitionCost + scaffoldCost + 90000 + woodCost + boardCost + plasticCost + rubbleCost + glassCost + ceramicCost;
 
-    const scaffoldCost = scaffold * unitPrices.scaffold;
-    addRow("足場費", scaffoldCost); total += scaffoldCost;
-
-    addRow("アスベスト調査費", unitPrices.asbestos); total += unitPrices.asbestos;
-
-    addRow("重機回送費（仮）", unitPrices.machineShort); total += unitPrices.machineShort;
-
-    const wasteCost =
-      wood * unitPrices.waste.wood +
-      board * unitPrices.waste.board +
-      plastic * unitPrices.waste.plastic +
-      rubble * unitPrices.waste.rubble +
-      glass * unitPrices.waste.glass +
-      ceramic * unitPrices.waste.ceramic;
-
-    addRow("産廃処分費", wasteCost); total += wasteCost;
-
-    addRow("合計金額", total);
+    document.getElementById("areaCell").textContent = `${area}㎡`;
+    document.getElementById("unitPriceCell").textContent = `${unitPrice.toLocaleString()}円`;
+    document.getElementById("demolitionCostCell").textContent = `${demolitionCost.toLocaleString()}円`;
+    document.getElementById("scaffoldCell").textContent = `${scaffold}㎡`;
+    document.getElementById("scaffoldCostCell").textContent = `${scaffoldCost.toLocaleString()}円`;
+    document.getElementById("woodCell").textContent = `${wood}kg`;
+    document.getElementById("woodCostCell").textContent = `${woodCost.toLocaleString()}円`;
+    document.getElementById("boardCell").textContent = `${board}kg`;
+    document.getElementById("boardCostCell").textContent = `${boardCost.toLocaleString()}円`;
+    document.getElementById("plasticCell").textContent = `${plastic}kg`;
+    document.getElementById("plasticCostCell").textContent = `${plasticCost.toLocaleString()}円`;
+    document.getElementById("rubbleCell").textContent = `${rubble}kg`;
+    document.getElementById("rubbleCostCell").textContent = `${rubbleCost.toLocaleString()}円`;
+    document.getElementById("glassCell").textContent = `${glass}kg`;
+    document.getElementById("glassCostCell").textContent = `${glassCost.toLocaleString()}円`;
+    document.getElementById("ceramicCell").textContent = `${ceramic}kg`;
+    document.getElementById("ceramicCostCell").textContent = `${ceramicCost.toLocaleString()}円`;
+    document.getElementById("totalCell").textContent = `${total.toLocaleString()}円`;
   </script>
 </body>
 </html>
