@@ -1,90 +1,117 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>見積内訳 - MiTAS</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MiTAS 見積内訳</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    body { font-family: 'Arial', sans-serif; padding: 20px; }
+    body { font-family: "IPAexMincho", serif; margin: 20px; }
     h1 { text-align: center; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { border: 1px solid #333; padding: 8px; text-align: left; }
+    .center { text-align: center; margin-top: 20px; }
+    #downloadBtn { padding: 10px 20px; }
   </style>
 </head>
 <body>
-  <h1>見積内訳書</h1>
-  <table id="estimateTable">
-    <tr><th>項目</th><th>内容</th><th>金額（円）</th></tr>
-    <tr><td>建物構造</td><td id="structure"></td><td id="structureCost"></td></tr>
-    <tr><td>延床面積</td><td id="area"></td><td></td></tr>
-    <tr><td>現場住所</td><td id="address" colspan="2"></td></tr>
-    <tr><td>足場面積</td><td id="scaffoldArea"></td><td id="scaffoldCost"></td></tr>
-    <tr><td>残置物</td><td id="leftovers"></td><td></td></tr>
-    <tr><td>付帯工事</td><td id="additional"></td><td></td></tr>
-    <tr><td>アスベスト調査費</td><td>固定</td><td id="asbestosCost"></td></tr>
-    <tr><td>重機回送費</td><td>10km以内</td><td id="machineCost"></td></tr>
-    <tr><td>産廃費用</td><td>木・ボード等</td><td id="wasteCost"></td></tr>
-    <tr><th colspan="2">合計</th><th id="total"></th></tr>
+  <h1>MiTAS 見積内訳</h1>
+  <table id="summaryTable">
+    <tr><th>項目</th><th>金額</th></tr>
+    <!-- 自動挿入されます -->
   </table>
+
+  <div class="center">
+    <button id="downloadBtn">PDF出力</button>
+  </div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
+    const structure = params.get("structure") || "木造";
+    const area = parseFloat(params.get("area") || 0);
+    const scaffold = parseFloat(params.get("scaffold") || 0);
+    const address = params.get("address") || "";
+    const leftovers = params.get("leftovers") || "";
+    const additional = params.get("additional") || "";
 
-    const structure = params.get("structure");
-    const area = Number(params.get("area"));
-    const address = params.get("address");
-    const scaffold = Number(params.get("scaffold"));
-    const leftovers = params.get("leftovers");
-    const additional = params.get("additional");
-
-    const woodWaste = Number(params.get("woodWaste") || 0);
-    const boardWaste = Number(params.get("boardWaste") || 0);
-    const plasticWaste = Number(params.get("plasticWaste") || 0);
-    const rubbleWaste = Number(params.get("rubbleWaste") || 0);
-    const glassWaste = Number(params.get("glassWaste") || 0);
-    const ceramicWaste = Number(params.get("ceramicWaste") || 0);
+    const wood = parseFloat(params.get("woodWaste") || 0);
+    const board = parseFloat(params.get("boardWaste") || 0);
+    const plastic = parseFloat(params.get("plasticWaste") || 0);
+    const rubble = parseFloat(params.get("rubbleWaste") || 0);
+    const glass = parseFloat(params.get("glassWaste") || 0);
+    const ceramic = parseFloat(params.get("ceramicWaste") || 0);
 
     const unitPrices = {
-      木造: 33000, RC造: 50000, S造: 33000, 軽量鉄骨造: 33000,
-      足場: 600,
-      アスベスト: 90000,
-      重機回送: 14000,
-      産廃: {
-        木くず: 16,
-        ボード類: 35,
-        廃プラ類: 50,
-        ガラ: 2,
-        ガラス: 10,
-        陶器: 20
-      }
+      "木造": 33000 / 3.3,
+      "RC造": 50000 / 3.3,
+      "S造": 33000 / 3.3,
+      "軽量鉄骨造": 33000 / 3.3,
+      scaffold: 600,
+      asbestos: 90000,
+      machine10km: 14000,
+      machineOver10km: 18000,
+      wood: 16,
+      board: 35,
+      plastic: 50,
+      rubble: 2,
+      glass: 10,
+      ceramic: 20
     };
 
-    const structureCost = area * (unitPrices[structure] || 0);
-    const scaffoldCost = scaffold * unitPrices.足場;
-    const asbestosCost = unitPrices.アスベスト;
-    const machineCost = unitPrices.重機回送;
-    const wasteCost =
-      woodWaste * unitPrices.産廃["木くず"] +
-      boardWaste * unitPrices.産廃["ボード類"] +
-      plasticWaste * unitPrices.産廃["廃プラ類"] +
-      rubbleWaste * unitPrices.産廃["ガラ"] +
-      glassWaste * unitPrices.産廃["ガラス"] +
-      ceramicWaste * unitPrices.産廃["陶器"];
+    const demolition = Math.round(area * unitPrices[structure]);
+    const scaffoldCost = Math.round(scaffold * unitPrices.scaffold);
+    const asbestosCost = unitPrices.asbestos;
+    const machineCost = unitPrices.machine10km; // 暫定（自動判別は後で）
 
-    const total = structureCost + scaffoldCost + asbestosCost + machineCost + wasteCost;
+    const wasteCosts = {
+      "木くず": Math.round(wood * unitPrices.wood),
+      "ボード類": Math.round(board * unitPrices.board),
+      "廃プラ類": Math.round(plastic * unitPrices.plastic),
+      "ガラ": Math.round(rubble * unitPrices.rubble),
+      "ガラス": Math.round(glass * unitPrices.glass),
+      "陶器": Math.round(ceramic * unitPrices.ceramic),
+    };
 
-    document.getElementById("structure").textContent = structure;
-    document.getElementById("area").textContent = `${area} ㎡`;
-    document.getElementById("address").textContent = address;
-    document.getElementById("scaffoldArea").textContent = `${scaffold} ㎡`;
-    document.getElementById("leftovers").textContent = leftovers;
-    document.getElementById("additional").textContent = additional;
-    document.getElementById("structureCost").textContent = structureCost.toLocaleString();
-    document.getElementById("scaffoldCost").textContent = scaffoldCost.toLocaleString();
-    document.getElementById("asbestosCost").textContent = asbestosCost.toLocaleString();
-    document.getElementById("machineCost").textContent = machineCost.toLocaleString();
-    document.getElementById("wasteCost").textContent = wasteCost.toLocaleString();
-    document.getElementById("total").textContent = total.toLocaleString();
+    const table = document.getElementById("summaryTable");
+
+    function addRow(label, value) {
+      const row = table.insertRow(-1);
+      row.insertCell(0).innerText = label;
+      row.insertCell(1).innerText = value.toLocaleString() + " 円";
+      return value;
+    }
+
+    let total = 0;
+    total += addRow("解体工事費", demolition);
+    total += addRow("足場工事費", scaffoldCost);
+    total += addRow("アスベスト調査費", asbestosCost);
+    total += addRow("重機回送費", machineCost);
+
+    for (const [label, value] of Object.entries(wasteCosts)) {
+      total += addRow(`産廃処分費（${label}）`, value);
+    }
+
+    addRow("合計金額", total);
+
+    // PDF出力処理
+    document.getElementById("downloadBtn").addEventListener("click", () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFont("IPAexMincho", "normal");
+      doc.setFontSize(16);
+      doc.text("MiTAS 見積内訳書", 20, 20);
+
+      let y = 40;
+      for (let i = 1; i < table.rows.length; i++) {
+        const row = table.rows[i];
+        const label = row.cells[0].innerText;
+        const amount = row.cells[1].innerText;
+        doc.text(`${label}：${amount}`, 20, y);
+        y += 10;
+      }
+
+      doc.save("MiTAS_見積内訳書.pdf");
+    });
   </script>
 </body>
 </html>
