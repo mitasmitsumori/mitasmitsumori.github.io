@@ -3,106 +3,91 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MiTAS 見積フォーム</title>
+  <title>MiTAS 見積内訳</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    h1 { font-size: 24px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f0f0f0; }
+  </style>
 </head>
 <body>
-  <h1>MiTAS 見積作成</h1>
-  <form id="estimateForm">
-    <label>建物構造：
-      <select id="structure">
-        <option value="木造">木造</option>
-        <option value="RC造">RC造</option>
-        <option value="S造">S造</option>
-        <option value="軽量鉄骨造">軽量鉄骨造</option>
-      </select>
-    </label><br/>
-
-    <label>延床面積（㎡）：<input type="number" id="area" required /></label><br/>
-    <label>現場住所：<input type="text" id="address" required /></label><br/>
-    <label>足場面積（㎡）：<input type="number" id="scaffoldArea" /></label><br/>
-
-    <label>残置物の有無：
-      <input type="radio" name="leftovers" value="あり">あり
-      <input type="radio" name="leftovers" value="なし">なし
-    </label><br/>
-
-    <label>付帯工事の有無：
-      <input type="radio" name="additional" value="あり">あり
-      <input type="radio" name="additional" value="なし">なし
-    </label><br/>
-
-    <h3>発生材の入力（kg）</h3>
-    <label>木くず（kg）：<input type="number" id="woodWaste" /></label><br/>
-    <label>ボード類（kg）：<input type="number" id="boardWaste" /></label><br/>
-    <label>廃プラ類（kg）：<input type="number" id="plasticWaste" /></label><br/>
-    <label>ガラ（kg）：<input type="number" id="rubbleWaste" /></label><br/>
-    <label>ガラス（kg）：<input type="number" id="glassWaste" /></label><br/>
-    <label>陶器（kg）：<input type="number" id="ceramicWaste" /></label><br/>
-
-    <button type="submit">見積作成</button>
-  </form>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <h1>見積内訳</h1>
+  <table>
+    <tr><th>項目</th><th>内容</th></tr>
+    <tr><td>建物構造</td><td id="structure"></td></tr>
+    <tr><td>延床面積（㎡）</td><td id="area"></td></tr>
+    <tr><td>現場住所</td><td id="address"></td></tr>
+    <tr><td>足場面積（㎡）</td><td id="scaffold"></td></tr>
+    <tr><td>残置物の有無</td><td id="leftovers"></td></tr>
+    <tr><td>付帯工事の有無</td><td id="additional"></td></tr>
+    <tr><td>解体工事費</td><td id="demolitionCost"></td></tr>
+    <tr><td>足場費</td><td id="scaffoldCost"></td></tr>
+    <tr><td>重機回送費</td><td id="machineCost"></td></tr>
+    <tr><td>アスベスト調査費</td><td id="asbestosCost"></td></tr>
+    <tr><td>産廃処分費（木くず）</td><td id="woodWasteCost"></td></tr>
+    <tr><td>産廃処分費（ボード類）</td><td id="boardWasteCost"></td></tr>
+    <tr><td>産廃処分費（廃プラ類）</td><td id="plasticWasteCost"></td></tr>
+    <tr><td>産廃処分費（ガラ）</td><td id="rubbleWasteCost"></td></tr>
+    <tr><td>産廃処分費（ガラス）</td><td id="glassWasteCost"></td></tr>
+    <tr><td>産廃処分費（陶器）</td><td id="ceramicWasteCost"></td></tr>
+  </table>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAN1cDb1yBdYBzEXQ2CD8anlih7YuPXggo",
-      authDomain: "mitas-estimate.firebaseapp.com",
-      projectId: "mitas-estimate",
-      storageBucket: "mitas-estimate.appspot.com",
-      messagingSenderId: "889863551826",
-      appId: "1:889863551826:web:71577461b5b9d810d4188b",
-      measurementId: "G-Y0H10QQQ16"
+    const params = new URLSearchParams(window.location.search);
+
+    // 入力データ
+    const structure = params.get("structure") || "木造";
+    const area = parseFloat(params.get("area") || 0);
+    const address = params.get("address") || "";
+    const scaffold = parseFloat(params.get("scaffold") || 0);
+    const leftovers = params.get("leftovers") || "";
+    const additional = params.get("additional") || "";
+
+    // 表示反映
+    document.getElementById("structure").textContent = structure;
+    document.getElementById("area").textContent = area || "未入力";
+    document.getElementById("address").textContent = address;
+    document.getElementById("scaffold").textContent = scaffold || "未入力";
+    document.getElementById("leftovers").textContent = leftovers;
+    document.getElementById("additional").textContent = additional;
+
+    // 単価設定
+    const unitPrices = {
+      "木造": 33000 / 3.3,
+      "RC造": 50000 / 3.3,
+      "S造": 33000 / 3.3,
+      "軽量鉄骨造": 33000 / 3.3
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    const demolitionCost = Math.round(area * unitPrices[structure]);
+    const scaffoldCost = Math.round(scaffold * 600);
+    const machineCost = 14000;
+    const asbestosCost = 90000;
 
-    document.getElementById("estimateForm").addEventListener("submit", function(e) {
-      e.preventDefault();
+    document.getElementById("demolitionCost").textContent = `${demolitionCost.toLocaleString()} 円`;
+    document.getElementById("scaffoldCost").textContent = `${scaffoldCost.toLocaleString()} 円`;
+    document.getElementById("machineCost").textContent = `${machineCost.toLocaleString()} 円`;
+    document.getElementById("asbestosCost").textContent = `${asbestosCost.toLocaleString()} 円`;
 
-      const structure = document.getElementById("structure").value;
-      const area = document.getElementById("area").value;
-      const address = document.getElementById("address").value;
-      const scaffoldArea = document.getElementById("scaffoldArea").value;
-      const leftovers = document.querySelector('input[name="leftovers"]:checked')?.value || "";
-      const additional = document.querySelector('input[name="additional"]:checked')?.value || "";
+    // 産廃処分費
+    const wasteUnitPrices = {
+      woodWaste: 16,
+      boardWaste: 35,
+      plasticWaste: 50,
+      rubbleWaste: 2,
+      glassWaste: 10,
+      ceramicWaste: 20
+    };
 
-      // Firestoreに保存するデータ（オプション）
-      const data = {
-        structure,
-        area,
-        address,
-        scaffoldArea,
-        hasLeftovers: leftovers,
-        hasAdditionalWork: additional,
-        createdAt: new Date()
-      };
-
-      // Firestore保存
-      db.collection("estimates").add(data).then(() => {
-        // 保存成功 → パラメータ付きで遷移
-        const params = new URLSearchParams({
-          structure,
-          area,
-          address,
-          scaffold: scaffoldArea,
-          leftovers,
-          additional,
-          woodWaste: document.getElementById("woodWaste").value,
-          boardWaste: document.getElementById("boardWaste").value,
-          plasticWaste: document.getElementById("plasticWaste").value,
-          rubbleWaste: document.getElementById("rubbleWaste").value,
-          glassWaste: document.getElementById("glassWaste").value,
-          ceramicWaste: document.getElementById("ceramicWaste").value
-        });
-        window.location.href = `uchiwake.html?${params.toString()}`;
-      }).catch((error) => {
-        alert("保存エラー: " + error);
-      });
-    });
+    for (const [key, unitPrice] of Object.entries(wasteUnitPrices)) {
+      const qty = parseFloat(params.get(key) || 0);
+      const cost = Math.round(qty * unitPrice);
+      const elementId = key + "Cost";
+      const el = document.getElementById(elementId);
+      if (el) el.textContent = `${cost.toLocaleString()} 円`;
+    }
   </script>
 </body>
 </html>
