@@ -27,14 +27,15 @@
   <script>
     const params = new URLSearchParams(window.location.search);
 
-    // 表示
+    // パラメータ取得
     const structure = params.get("structure") || "未入力";
-    const area = parseFloat(params.get("area") || 0);
+    const area = parseFloat(params.get("area")) || 0;
     const address = params.get("address") || "未入力";
     const scaffold = params.get("scaffold") || "未入力";
     const leftovers = params.get("leftovers") || "未入力";
     const additional = params.get("additional") || "未入力";
 
+    // 表示反映
     document.getElementById("structure").textContent = structure;
     document.getElementById("area").textContent = area;
     document.getElementById("address").textContent = address;
@@ -50,6 +51,7 @@
       "軽量鉄骨造": 33000 / 3.3
     };
 
+    // 解体工事費計算
     const demolitionCost = Math.round(area * (unitPrices[structure] || 0));
     document.getElementById("demolitionCost").textContent = demolitionCost.toLocaleString() + " 円";
   </script>
