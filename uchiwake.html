@@ -13,9 +13,14 @@
     .total { font-weight: bold; }
     #downloadBtn { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
   </style>
+
+  <!-- jsPDFとautoTableライブラリ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
   <h1>御見積内訳書</h1>
+
   <table id="estimateTable">
     <thead>
       <tr>
@@ -34,9 +39,9 @@
       </tr>
     </tfoot>
   </table>
+
   <button id="downloadBtn">PDFを出力する</button>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     const structure = params.get("structure");
