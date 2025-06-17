@@ -80,3 +80,26 @@
 <tr><td>産廃処分費（ガラ）</td><td id="rubbleWasteCost"></td></tr>
 <tr><td>産廃処分費（ガラス）</td><td id="glassWasteCost"></td></tr>
 <tr><td>産廃処分費（陶器）</td><td id="ceramicWasteCost"></td></tr>
+<script>
+  const wasteUnitPrices = {
+    wood: 16,
+    board: 35,
+    plastic: 50,
+    rubble: 2,
+    glass: 10,
+    ceramic: 20
+  };
+
+  function calcWasteCost(type, paramKey, elementId) {
+    const qty = parseFloat(params.get(paramKey) || 0);
+    const cost = Math.round(qty * wasteUnitPrices[type]);
+    document.getElementById(elementId).textContent = cost.toLocaleString() + " 円";
+  }
+
+  calcWasteCost("wood", "woodWaste", "woodWasteCost");
+  calcWasteCost("board", "boardWaste", "boardWasteCost");
+  calcWasteCost("plastic", "plasticWaste", "plasticWasteCost");
+  calcWasteCost("rubble", "rubbleWaste", "rubbleWasteCost");
+  calcWasteCost("glass", "glassWaste", "glassWasteCost");
+  calcWasteCost("ceramic", "ceramicWaste", "ceramicWasteCost");
+</script>
