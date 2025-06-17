@@ -14,7 +14,6 @@
     .total { font-weight: bold; }
     #downloadBtn { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
   </style>
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
@@ -59,6 +58,7 @@
     const glass = parseFloat(params.get("glassWaste") || 0);
     const ceramic = parseFloat(params.get("ceramicWaste") || 0);
     const address = params.get("address") || "";
+    const discount = parseFloat(params.get("discount") || 0);
 
     document.getElementById("addressText").textContent = address;
 
@@ -73,19 +73,22 @@
       "廃プラ類": 50,
       "ガラ": 2,
       "ガラス": 10,
-      "陶器": 20
+      "陶器": 20,
+      "アスベスト調査費": 90000,
+      "重機回送費": 14000,
+      "管理費": 30000
     };
 
     const table = document.getElementById("estimateBody");
     let total = 0;
 
-    function addRow(label, qty, unit, unitPrice) {
-      const price = Math.round(qty * unitPrice);
+    function addRow(label, qty, unit, unitPrice, overridePrice = null) {
+      const price = overridePrice !== null ? overridePrice : Math.round(qty * unitPrice);
       total += price;
       const row = `<tr>
         <td>${label}</td>
-        <td>${qty}</td>
-        <td>${unit}</td>
+        <td>${qty || "-"}</td>
+        <td>${unit || "-"}</td>
         <td>${unitPrice.toLocaleString()}</td>
         <td>${price.toLocaleString()}</td>
       </tr>`;
@@ -94,12 +97,20 @@
 
     addRow("解体工事費", area, "㎡", unitPrices[structure] || 0);
     addRow("足場工事費", scaffold, "㎡", unitPrices["足場"]);
+    addRow("アスベスト調査費", 1, "式", unitPrices["アスベスト調査費"]);
+    addRow("重機回送費", 1, "式", unitPrices["重機回送費"]);
+    addRow("管理費", 1, "式", unitPrices["管理費"]);
+
     addRow("木くず（処分費）", wood, "kg", unitPrices["木くず"]);
     addRow("ボード類", board, "kg", unitPrices["ボード類"]);
     addRow("廃プラ類", plastic, "kg", unitPrices["廃プラ類"]);
     addRow("ガラ", rubble, "kg", unitPrices["ガラ"]);
     addRow("ガラス", glass, "kg", unitPrices["ガラス"]);
     addRow("陶器", ceramic, "kg", unitPrices["陶器"]);
+
+    if (discount > 0) {
+      addRow("値引き", 1, "式", -discount, -discount);
+    }
 
     document.getElementById("totalPrice").textContent = total.toLocaleString() + " 円";
 
