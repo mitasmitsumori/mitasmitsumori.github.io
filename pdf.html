@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>見積PDF - MiTAS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    body { font-family: 'IPAexMincho', serif; padding: 20px; background: #ffffff; }
+    h1 { text-align: center; }
+    #generateBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #2c3e50;
+      color: white;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>御見積書PDF出力</h1>
+  <button id="generateBtn">PDFを生成する</button>
+
+  <script>
+    document.getElementById("generateBtn").addEventListener("click", () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // 見積書タイトル
+      doc.setFont("IPAexMincho", "normal");
+      doc.setFontSize(20);
+      doc.text("御見積書", 105, 20, { align: "center" });
+
+      // 左側の情報
+      doc.setFontSize(12);
+      const info = [
+        "工事名：解体工事",
+        "工事場所：鹿児島市〇〇町",
+        "工事期間：令和6年6月20日～9月5日",
+        "支払条件：月末締め翌月末払い",
+        "見積有効期限：発行日より30日間",
+        "摘要：特記事項なし"
+      ];
+      info.forEach((line, i) => {
+        doc.text(line, 20, 40 + i * 7);
+      });
+
+      // 右下の会社情報
+      doc.setFontSize(10);
+      const companyInfo = [
+        "株式会社 丸解",
+        "代表取締役 薩摩 寅次郎",
+        "〒890-0000 鹿児島市○○○○",
+        "TEL: 099-000-0000",
+        "FAX: 099-000-0001",
+        "許可番号: 第123456号"
+      ];
+      companyInfo.forEach((line, i) => {
+        doc.text(line, 140, 220 + i * 5);
+      });
+
+      // 金額中央
+      doc.setFontSize(14);
+      doc.text("御見積金額：2,980,000 円（税込）", 105, 100, { align: "center" });
+
+      // Powered by MiTAS
+      doc.setFontSize(10);
+      doc.text("Powered by MiTAS", 105, 285, { align: "center" });
+
+      doc.save("見積書.pdf");
+    });
+  </script>
+</body>
+</html>
