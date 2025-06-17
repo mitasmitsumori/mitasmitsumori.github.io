@@ -27,6 +27,10 @@
       font-size: 1.2em;
       text-align: right;
     }
+    #downloadBtn {
+      margin-top: 20px;
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -53,6 +57,12 @@
       <tr><td colspan="3" class="total">合計金額（税込）</td><td id="totalCell"></td></tr>
     </tbody>
   </table>
+
+  <button id="downloadBtn">PDFで保存</button>
+
+  <!-- jsPDF + html2canvas CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
@@ -103,6 +113,20 @@
     document.getElementById("ceramicCell").textContent = `${ceramic}kg`;
     document.getElementById("ceramicCostCell").textContent = `${ceramicCost.toLocaleString()}円`;
     document.getElementById("totalCell").textContent = `${total.toLocaleString()}円`;
+
+    // PDF出力機能
+    document.getElementById("downloadBtn").addEventListener("click", () => {
+      const { jsPDF } = window.jspdf;
+      html2canvas(document.body).then((canvas) => {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF("p", "mm", "a4");
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+        pdf.save("MiTAS_見積書.pdf");
+      });
+    });
   </script>
 </body>
 </html>
