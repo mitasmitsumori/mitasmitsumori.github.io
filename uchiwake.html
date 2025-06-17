@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>見積内訳</title>
+</head>
+<body>
+  <h1>見積内訳</h1>
+  <div id="summary"></div>
+
+  <script src="settings.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+
+    const structure = params.get("structure");
+    const area = parseFloat(params.get("area")) || 0;
+    const scaffold = parseFloat(params.get("scaffold")) || 0;
+
+    const unitPrices = {
+      "木造": 33000,
+      "RC造": 50000,
+      "S造": 33000,
+      "軽量鉄骨造": 33000,
+      scaffold: 600,
+      asbestos: 90000,
+      transport: 14000,
+      waste: {
+        wood: 16,
+        board: 35,
+        plastic: 50,
+        rubble: 2,
+        glass: 10,
+        ceramic: 20
+      },
+      buyback: {
+        iron: 25,
+        aluminum: 100
+      }
+    };
+
+    // 解体費
+    const tsubo = area * 0.3025;
+    const dismantleCost = Math.round(tsubo * unitPrices[structure]);
+
+    // 足場費
+    const scaffoldCost = Math.round(scaffold * unitPrices.scaffold);
+
+    // アスベスト調査費（固定）
+    const asbestosCost = unitPrices.asbestos;
+
+    // 重機回送費（仮固定：10km以内）
+    const transportCost = unitPrices.transport;
+
+    // 産廃費
+    const wasteWood = parseFloat(params.get("woodWaste")) || 0;
+    const wasteBoard = parseFloat(params.get("boardWaste")) || 0;
+    const wastePlastic = parseFloat(params.get("plasticWaste")) || 0;
+    const wasteRubble = parseFloat(params.get("rubbleWaste")) || 0;
+    const wasteGlass = parseFloat(params.get("glassWaste")) || 0;
+    const wasteCeramic = parseFloat(params.get("ceramicWaste")) || 0;
+
+    const wasteCost = Math.round(
+      wasteWood * unitPrices.waste.wood +
+      wasteBoard * unitPrices.waste.board +
+      wastePlastic * unitPrices.waste.plastic +
+      wasteRubble * unitPrices.waste.rubble +
+      wasteGlass * unitPrices.waste.glass +
+      wasteCeramic * unitPrices.waste.ceramic
+    );
+
+    // 合計
+    const total = dismantleCost + scaffoldCost + asbestosCost + transportCost + wasteCost;
+
+    // 表示
+    const summaryDiv = document.getElementById("summary");
+    summaryDiv.innerHTML = `
+      <ul>
+        <li>構造: ${structure}</li>
+        <li>延床面積: ${area}㎡（${tsubo.toFixed(2)}坪）</li>
+        <li>解体費: ¥${dismantleCost.toLocaleString()}</li>
+        <li>足場費: ¥${scaffoldCost.toLocaleString()}</li>
+        <li>アスベスト調査費: ¥${asbestosCost.toLocaleString()}</li>
+        <li>重機回送費: ¥${transportCost.toLocaleString()}</li>
+        <li>産廃処分費: ¥${wasteCost.toLocaleString()}</li>
+        <li><strong>合計金額: ¥${total.toLocaleString()}</strong></li>
+      </ul>
+    `;
+  </script>
+</body>
+</html>
