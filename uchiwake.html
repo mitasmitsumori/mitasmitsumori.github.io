@@ -36,21 +36,27 @@
   </table>
   <button id="downloadBtn">PDFを出力する</button>
 
-  <script src="settings.js"></script>
+  <!-- Firebase・jsPDF・設定ファイルの読み込み -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-
+  <script src="settings.js"></script>
   <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAN1cDb1yBdYBzEXQ2CD8anlih7YuPXggo",
+      authDomain: "mitas-estimate.firebaseapp.com",
+      projectId: "mitas-estimate",
+      storageBucket: "mitas-estimate.appspot.com",
+      messagingSenderId: "889863551826",
+      appId: "1:889863551826:web:71577461b5b9d810d4188b",
+      measurementId: "G-Y0H10QQQ16"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     const params = new URLSearchParams(window.location.search);
-    const structure = params.get("structure");
-    const area = parseFloat(params.get("area") || 0);
-    const scaffold = parseFloat(params.get("scaffold") || 0);
-    const wood = parseFloat(params.get("woodWaste") || 0);
-    const board = parseFloat(params.get("boardWaste") || 0);
-    const plastic = parseFloat(params.get("plasticWaste") || 0);
-    const rubble = parseFloat(params.get("rubbleWaste") || 0);
-    const glass = parseFloat(params.get("glassWaste") || 0);
-    const ceramic = parseFloat(params.get("ceramicWaste") || 0);
+    const id = params.get("id");
 
     const table = document.getElementById("estimateBody");
     let total = 0;
@@ -68,18 +74,26 @@
       table.insertAdjacentHTML("beforeend", row);
     }
 
-    // 価格データをsettings.jsから取得
-    addRow("解体工事費", area, "㎡", unitPrices.解体単価[structure] || 0);
-    addRow("足場工事費", scaffold, "㎡", unitPrices.足場単価);
-    addRow("アスベスト調査費", 1, "式", unitPrices.アスベスト調査費);
-    addRow("木くず（処分費）", wood, "kg", unitPrices.産廃単価["木くず"]);
-    addRow("ボード類", board, "kg", unitPrices.産廃単価["ボード類"]);
-    addRow("廃プラ類", plastic, "kg", unitPrices.産廃単価["廃プラ類"]);
-    addRow("ガラ", rubble, "kg", unitPrices.産廃単価["ガラ"]);
-    addRow("ガラス", glass, "kg", unitPrices.産廃単価["ガラス"]);
-    addRow("陶器", ceramic, "kg", unitPrices.産廃単価["陶器"]);
+    async function loadEstimate() {
+      if (!id) return alert("IDが指定されていません");
 
-    document.getElementById("totalPrice").textContent = total.toLocaleString() + " 円";
+      const doc = await db.collection("estimates").doc(id).get();
+      if (!doc.exists) return alert("見積が見つかりません");
+
+      const data = doc.data();
+
+      addRow("解体工事費", data.area, "㎡", unitPrices.解体単価[data.structure] || 0);
+      addRow("足場工事費", data.scaffold, "㎡", unitPrices.足場単価);
+      addRow("アスベスト調査費", 1, "式", unitPrices.アスベスト調査費);
+      addRow("木くず（処分費）", data.woodWaste, "kg", unitPrices.産廃単価["木くず"]);
+      addRow("ボード類", data.boardWaste, "kg", unitPrices.産廃単価["ボード類"]);
+      addRow("廃プラ類", data.plasticWaste, "kg", unitPrices.産廃単価["廃プラ類"]);
+      addRow("ガラ", data.rubbleWaste, "kg", unitPrices.産廃単価["ガラ"]);
+      addRow("ガラス", data.glassWaste, "kg", unitPrices.産廃単価["ガラス"]);
+      addRow("陶器", data.ceramicWaste, "kg", unitPrices.産廃単価["陶器"]);
+
+      document.getElementById("totalPrice").textContent = total.toLocaleString() + " 円";
+    }
 
     document.getElementById("downloadBtn").addEventListener("click", () => {
       const { jsPDF } = window.jspdf;
@@ -88,6 +102,8 @@
       doc.autoTable({ html: '#estimateTable', startY: 25 });
       doc.save("見積書.pdf");
     });
+
+    loadEstimate();
   </script>
 </body>
 </html>
