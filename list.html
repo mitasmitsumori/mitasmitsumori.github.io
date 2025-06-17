@@ -1,58 +1,52 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>見積一覧</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background-color: #f0f0f0; }
-    button { padding: 4px 10px; }
-  </style>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <script src="settings.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>見積一覧 - MiTAS</title>
 </head>
 <body>
   <h1>見積一覧</h1>
-  <table>
-    <thead>
-      <tr>
-        <th>構造</th><th>面積</th><th>住所</th><th>作成日時</th><th>操作</th>
-      </tr>
-    </thead>
-    <tbody id="listBody"></tbody>
-  </table>
+  <ul id="estimateList"></ul>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAN1cDb1yBdYBzEXQ2CD8anlih7YuPXggo",
       authDomain: "mitas-estimate.firebaseapp.com",
-      projectId: "mitas-estimate"
+      projectId: "mitas-estimate",
+      storageBucket: "mitas-estimate.appspot.com",
+      messagingSenderId: "889863551826",
+      appId: "1:889863551826:web:71577461b5b9d810d4188b",
+      measurementId: "G-Y0H10QQQ16"
     };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const tbody = document.getElementById("listBody");
+    const listElement = document.getElementById("estimateList");
 
-    db.collection("estimates").orderBy("createdAt", "desc").get().then(snapshot => {
-      snapshot.forEach(doc => {
+    db.collection("estimates").orderBy("createdAt", "desc").get().then((querySnapshot) => {
+      querySnapshot.forEach((doc) => {
         const data = doc.data();
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${data.structure}</td>
-          <td>${data.area}</td>
-          <td>${data.address}</td>
-          <td>${data.createdAt.toDate().toLocaleString()}</td>
-          <td>
-            <button onclick="location.href='uchiwake.html?id=${doc.id}'">表示</button>
-            <button onclick="location.href='edit.html?id=${doc.id}'">編集</button>
-          </td>
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <strong>構造：</strong>${data.structure}　
+          <strong>面積：</strong>${data.area}㎡　
+          <strong>住所：</strong>${data.address}<br/>
+          <button onclick="viewEstimate('${doc.id}')">詳細を見る</button>
         `;
-        tbody.appendChild(row);
+        listElement.appendChild(li);
       });
     });
+
+    function viewEstimate(id) {
+      // ID付きでedit.htmlへ遷移
+      window.location.href = `edit.html?id=${id}`;
+    }
   </script>
 </body>
 </html>
