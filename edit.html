@@ -3,31 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>見積編集 - MiTAS</title>
+  <title>MiTAS 編集画面</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    label { display: block; margin-top: 10px; }
+  </style>
 </head>
 <body>
-  <h1>見積編集</h1>
+  <h1>見積内容の編集</h1>
   <form id="editForm">
-    <label>建物構造：
-      <input type="text" id="structure" />
-    </label><br/>
-    <label>延床面積（㎡）：
-      <input type="number" id="area" />
-    </label><br/>
-    <label>現場住所：
-      <input type="text" id="address" />
-    </label><br/>
-    <label>足場面積（㎡）：
-      <input type="number" id="scaffoldArea" />
-    </label><br/>
-    <label>残置物の有無：
-      <input type="text" id="leftovers" />
-    </label><br/>
-    <label>付帯工事の有無：
-      <input type="text" id="additional" />
-    </label><br/>
-
-    <button type="submit">更新</button>
+    <label>建物構造：<input type="text" id="structure" /></label>
+    <label>延床面積（㎡）：<input type="number" id="area" /></label>
+    <label>現場住所：<input type="text" id="address" /></label>
+    <label>足場面積（㎡）：<input type="number" id="scaffoldArea" /></label>
+    <label>残置物の有無：<input type="text" id="leftovers" /></label>
+    <label>付帯工事の有無：<input type="text" id="additional" /></label>
+    <button type="submit">内訳を確認</button>
   </form>
 
   <!-- Firebase SDK -->
@@ -48,47 +39,48 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const docId = urlParams.get("id");
+    // URLからdocIdを取得（例: edit.html?id=abc123）
+    const params = new URLSearchParams(window.location.search);
+    const docId = params.get("id");
 
-    const structureInput = document.getElementById("structure");
-    const areaInput = document.getElementById("area");
-    const addressInput = document.getElementById("address");
-    const scaffoldInput = document.getElementById("scaffoldArea");
-    const leftoversInput = document.getElementById("leftovers");
-    const additionalInput = document.getElementById("additional");
+    const form = document.getElementById("editForm");
 
-    // 編集対象のデータ取得
-    db.collection("estimates").doc(docId).get().then((doc) => {
-      if (doc.exists) {
-        const data = doc.data();
-        structureInput.value = data.structure;
-        areaInput.value = data.area;
-        addressInput.value = data.address;
-        scaffoldInput.value = data.scaffoldArea;
-        leftoversInput.value = data.hasLeftovers;
-        additionalInput.value = data.hasAdditionalWork;
-      } else {
-        alert("データが存在しません");
-      }
-    });
+    // 編集対象の見積データを取得して表示
+    if (docId) {
+      db.collection("estimates").doc(docId).get().then((doc) => {
+        if (doc.exists) {
+          const data = doc.data();
+          document.getElementById("structure").value = data.structure || "";
+          document.getElementById("area").value = data.area || "";
+          document.getElementById("address").value = data.address || "";
+          document.getElementById("scaffoldArea").value = data.scaffoldArea || "";
+          document.getElementById("leftovers").value = data.hasLeftovers || "";
+          document.getElementById("additional").value = data.hasAdditionalWork || "";
+        }
+      });
+    }
 
-    document.getElementById("editForm").addEventListener("submit", function(e) {
+    // 編集して「見積内訳ページへ遷移」
+    form.addEventListener("submit", function(e) {
       e.preventDefault();
 
-      db.collection("estimates").doc(docId).update({
-        structure: structureInput.value,
-        area: areaInput.value,
-        address: addressInput.value,
-        scaffoldArea: scaffoldInput.value,
-        hasLeftovers: leftoversInput.value,
-        hasAdditionalWork: additionalInput.value,
-      }).then(() => {
-        alert("更新が完了しました");
-        window.location.href = "list.html";
-      }).catch((error) => {
-        alert("更新失敗: " + error);
+      const structure = document.getElementById("structure").value;
+      const area = document.getElementById("area").value;
+      const address = document.getElementById("address").value;
+      const scaffoldArea = document.getElementById("scaffoldArea").value;
+      const leftovers = document.getElementById("leftovers").value;
+      const additional = document.getElementById("additional").value;
+
+      const query = new URLSearchParams({
+        structure,
+        area,
+        address,
+        scaffold: scaffoldArea,
+        leftovers,
+        additional
       });
+
+      window.location.href = `uchiwake.html?${query.toString()}`;
     });
   </script>
 </body>
