@@ -1,22 +1,21 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>見積編集 - MiTAS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
-    body { font-family: 'IPAexMincho', serif; margin: 20px; }
-    h1 { text-align: center; }
-    label { display: block; margin: 10px 0 5px; }
-    input, select { width: 100%; padding: 8px; font-size: 14px; }
-    button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
+    body { font-family: 'IPAexMincho', serif; padding: 20px; }
+    h1 { font-size: 22px; margin-bottom: 20px; }
+    label { display: block; margin-top: 10px; }
+    input, select { width: 100%; padding: 6px; font-size: 14px; margin-top: 4px; }
+    button { margin-top: 20px; padding: 10px 20px; font-size: 14px; }
   </style>
 </head>
 <body>
   <h1>見積編集</h1>
   <form id="editForm">
-    <label>お客様名：<input type="text" id="customerName" /></label>
-    <label>現場住所：<input type="text" id="siteAddress" /></label>
+    <label>現場住所：<input type="text" id="address" /></label>
     <label>建物構造：
       <select id="structure">
         <option value="木造">木造</option>
@@ -27,12 +26,13 @@
     </label>
     <label>延床面積（㎡）：<input type="number" id="area" /></label>
     <label>足場面積（㎡）：<input type="number" id="scaffold" /></label>
-
-    <button type="submit">保存する</button>
+    <button type="submit">保存</button>
   </form>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAN1cDb1yBdYBzEXQ2CD8anlih7YuPXggo",
@@ -43,46 +43,37 @@
       appId: "1:889863551826:web:71577461b5b9d810d4188b",
       measurementId: "G-Y0H10QQQ16"
     };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const id = new URLSearchParams(window.location.search).get("id");
-    if (!id) {
-      alert("IDが見つかりません");
-      location.href = "list.html";
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    const form = document.getElementById("editForm");
+
+    if (id) {
+      db.collection("estimates").doc(id).get().then((doc) => {
+        if (doc.exists) {
+          const data = doc.data();
+          document.getElementById("address").value = data.address || "";
+          document.getElementById("structure").value = data.structure || "木造";
+          document.getElementById("area").value = data.area || 0;
+          document.getElementById("scaffold").value = data.scaffold || 0;
+        }
+      });
     }
 
-    const form = document.getElementById("editForm");
-    const customerName = document.getElementById("customerName");
-    const siteAddress = document.getElementById("siteAddress");
-    const structure = document.getElementById("structure");
-    const area = document.getElementById("area");
-    const scaffold = document.getElementById("scaffold");
-
-    db.collection("estimates").doc(id).get().then(doc => {
-      if (doc.exists) {
-        const data = doc.data();
-        customerName.value = data.customerName || "";
-        siteAddress.value = data.siteAddress || "";
-        structure.value = data.structure || "木造";
-        area.value = data.area || 0;
-        scaffold.value = data.scaffoldArea || 0;
-      } else {
-        alert("データが見つかりませんでした");
-        location.href = "list.html";
-      }
-    });
-
-    form.addEventListener("submit", function(e) {
+    form.addEventListener("submit", (e) => {
       e.preventDefault();
-      db.collection("estimates").doc(id).update({
-        customerName: customerName.value,
-        siteAddress: siteAddress.value,
-        structure: structure.value,
-        area: parseFloat(area.value),
-        scaffoldArea: parseFloat(scaffold.value)
-      }).then(() => {
-        alert("保存しました！");
+      const updated = {
+        address: document.getElementById("address").value,
+        structure: document.getElementById("structure").value,
+        area: parseFloat(document.getElementById("area").value),
+        scaffold: parseFloat(document.getElementById("scaffold").value),
+        updatedAt: new Date()
+      };
+      db.collection("estimates").doc(id).update(updated).then(() => {
+        alert("保存しました");
         location.href = "list.html";
       });
     });
