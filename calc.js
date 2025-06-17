@@ -1,32 +1,22 @@
-// 計算用関数
 function calculateEstimate(data, settings) {
-  const prices = settings.unitPrices;
-  let rows = [];
-  let total = 0;
+  const { unitPrices } = settings;
 
-  const demolitionUnit = prices.demolition[data.structure] || 0;
-  const demolition = Math.round(data.area * demolitionUnit);
-  rows.push(["解体工事費", data.area, "㎡", demolitionUnit, demolition]);
-  total += demolition;
+  const rows = [];
 
-  const scaffold = Math.round(data.scaffold * prices.scaffold);
-  rows.push(["足場工事費", data.scaffold, "㎡", prices.scaffold, scaffold]);
-  total += scaffold;
-
-  const wasteItems = [
-    ["木くず", data.woodWaste, prices.waste["木くず"]],
-    ["ボード類", data.boardWaste, prices.waste["ボード類"]],
-    ["廃プラ類", data.plasticWaste, prices.waste["廃プラ類"]],
-    ["ガラ", data.rubbleWaste, prices.waste["ガラ"]],
-    ["ガラス", data.glassWaste, prices.waste["ガラス"]],
-    ["陶器", data.ceramicWaste, prices.waste["陶器"]]
-  ];
-
-  for (const [label, qty, unitPrice] of wasteItems) {
+  function add(label, qty, unit, unitKey) {
+    const unitPrice = unitPrices[unitKey] || 0;
     const amount = Math.round(qty * unitPrice);
-    rows.push([`${label}（処分費）`, qty, "kg", unitPrice, amount]);
-    total += amount;
+    rows.push([label, qty, unit, unitPrice, amount]);
   }
 
-  return { rows, total };
+  add("解体工事費", data.area, "㎡", data.structure);
+  add("足場工事費", data.scaffold, "㎡", "足場");
+  add("木くず（処分費）", data.woodWaste, "kg", "木くず");
+  add("ボード類", data.boardWaste, "kg", "ボード類");
+  add("廃プラ類", data.plasticWaste, "kg", "廃プラ類");
+  add("ガラ", data.rubbleWaste, "kg", "ガラ");
+  add("ガラス", data.glassWaste, "kg", "ガラス");
+  add("陶器", data.ceramicWaste, "kg", "陶器");
+
+  return { rows };
 }
