@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MiTAS 見積編集</title>
+</head>
+<body>
+  <h1>見積編集画面</h1>
+  <div id="estimateData"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAN1cDb1yBdYBzEXQ2CD8anlih7YuPXggo",
+      authDomain: "mitas-estimate.firebaseapp.com",
+      projectId: "mitas-estimate",
+      storageBucket: "mitas-estimate.appspot.com",
+      messagingSenderId: "889863551826",
+      appId: "1:889863551826:web:71577461b5b9d810d4188b",
+      measurementId: "G-Y0H10QQQ16"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const docId = urlParams.get("id");
+
+    if (!docId) {
+      document.getElementById("estimateData").innerText = "IDが見つかりません。";
+    } else {
+      db.collection("estimates").doc(docId).get().then((doc) => {
+        if (doc.exists) {
+          const data = doc.data();
+          const div = document.getElementById("estimateData");
+          div.innerHTML = `
+            <p><strong>建物構造:</strong> ${data.structure}</p>
+            <p><strong>延床面積:</strong> ${data.area} ㎡</p>
+            <p><strong>現場住所:</strong> ${data.address}</p>
+            <p><strong>足場面積:</strong> ${data.scaffoldArea || "未入力"} ㎡</p>
+            <p><strong>残置物:</strong> ${data.hasLeftovers || "未選択"}</p>
+            <p><strong>付帯工事:</strong> ${data.hasAdditionalWork || "未選択"}</p>
+            <p><strong>作成日時:</strong> ${data.createdAt.toDate().toLocaleString()}</p>
+            <br/>
+            <button onclick="generatePDF()">PDF出力（仮）</button>
+          `;
+        } else {
+          document.getElementById("estimateData").innerText = "見積が見つかりません。";
+        }
+      });
+    }
+
+    function generatePDF() {
+      alert("PDF出力機能は今後追加予定です");
+    }
+  </script>
+</body>
+</html>
