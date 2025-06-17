@@ -73,3 +73,19 @@
   </script>
 </body>
 </html>
+<script>
+  document.getElementById("estimateForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const params = new URLSearchParams({
+      structure: document.getElementById("structure").value,
+      area: document.getElementById("area").value,
+      address: document.getElementById("address").value,
+      scaffold: document.getElementById("scaffold").value,
+      leftovers: document.querySelector('input[name="leftovers"]:checked')?.value || "",
+      additional: document.querySelector('input[name="additional"]:checked')?.value || ""
+    });
+
+    window.location.href = `uchiwake.html?${params.toString()}`;
+  });
+</script>
