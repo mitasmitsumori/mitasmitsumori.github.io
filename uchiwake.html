@@ -6,6 +6,7 @@
   <title>MiTAS 見積内訳</title>
   <style>
     body { font-family: sans-serif; padding: 20px; }
+    h1 { font-size: 24px; }
     table { border-collapse: collapse; width: 100%; margin-top: 20px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
     th { background-color: #f0f0f0; }
@@ -22,26 +23,31 @@
     <tr><td>残置物の有無</td><td id="leftovers"></td></tr>
     <tr><td>付帯工事の有無</td><td id="additional"></td></tr>
     <tr><td>解体工事費</td><td id="demolitionCost"></td></tr>
+    <tr><td>足場費</td><td id="scaffoldCost"></td></tr>
+    <tr><td>重機回送費</td><td id="machineCost"></td></tr>
+    <tr><td>アスベスト調査費</td><td id="asbestosCost"></td></tr>
   </table>
 
   <script>
     const params = new URLSearchParams(window.location.search);
 
-    const structure = params.get("structure") || "未入力";
+    // 入力値取得
+    const structure = params.get("structure") || "木造";
     const area = parseFloat(params.get("area") || 0);
-    const address = params.get("address") || "未入力";
-    const scaffold = params.get("scaffold") || "未入力";
-    const leftovers = params.get("leftovers") || "未入力";
-    const additional = params.get("additional") || "未入力";
+    const address = params.get("address") || "";
+    const scaffold = parseFloat(params.get("scaffold") || 0);
+    const leftovers = params.get("leftovers") || "";
+    const additional = params.get("additional") || "";
 
+    // 表示反映
     document.getElementById("structure").textContent = structure;
-    document.getElementById("area").textContent = area;
+    document.getElementById("area").textContent = area || "未入力";
     document.getElementById("address").textContent = address;
-    document.getElementById("scaffold").textContent = scaffold;
+    document.getElementById("scaffold").textContent = scaffold || "未入力";
     document.getElementById("leftovers").textContent = leftovers;
     document.getElementById("additional").textContent = additional;
 
-    // 構造別坪単価（㎡換算）
+    // ▼ 自動計算 ▼
     const unitPrices = {
       "木造": 33000 / 3.3,
       "RC造": 50000 / 3.3,
@@ -49,10 +55,16 @@
       "軽量鉄骨造": 33000 / 3.3
     };
 
-    const pricePerSqm = unitPrices[structure] || 0;
-    const demolitionCost = Math.round(area * pricePerSqm);
+    const demolitionCost = Math.round(area * unitPrices[structure]);
+    const scaffoldCost = Math.round(scaffold * 600);
+    const machineCost = 14000; // 仮に固定
+    const asbestosCost = 90000;
 
+    // ▼ 表示反映
     document.getElementById("demolitionCost").textContent = `${demolitionCost.toLocaleString()} 円`;
+    document.getElementById("scaffoldCost").textContent = `${scaffoldCost.toLocaleString()} 円`;
+    document.getElementById("machineCost").textContent = `${machineCost.toLocaleString()} 円`;
+    document.getElementById("asbestosCost").textContent = `${asbestosCost.toLocaleString()} 円`;
   </script>
 </body>
 </html>
