@@ -5,114 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MiTAS 見積内訳</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; background: #f9f9f9; }
-    h1 { text-align: center; color: #2c3e50; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; }
+    body { font-family: sans-serif; padding: 20px; }
+    h1 { font-size: 24px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background-color: #2c3e50; color: white; }
-    #totalPrice { font-size: 1.2em; font-weight: bold; color: #2c3e50; text-align: right; margin-top: 20px; }
-    button { background: #2c3e50; color: #fff; padding: 10px 20px; border: none; margin-top: 20px; cursor: pointer; }
+    th { background-color: #f0f0f0; }
   </style>
+  <script src="settings.js"></script> <!-- 単価設定を読み込む -->
 </head>
 <body>
-  <h1>御見積 内訳</h1>
-
-  <table id="estimateTable">
-    <thead>
-      <tr><th>項目</th><th>金額</th></tr>
-    </thead>
-    <tbody id="estimateBody"></tbody>
+  <h1>見積内訳</h1>
+  <table>
+    <tr><th>項目</th><th>内容</th></tr>
+    <tr><td>建物構造</td><td id="structure"></td></tr>
+    <tr><td>延床面積（㎡）</td><td id="area"></td></tr>
+    <tr><td>現場住所</td><td id="address"></td></tr>
+    <tr><td>足場面積（㎡）</td><td id="scaffold"></td></tr>
+    <tr><td>解体工事費</td><td id="demolitionCost"></td></tr>
+    <tr><td>足場費</td><td id="scaffoldCost"></td></tr>
+    <tr><td>重機回送費</td><td id="machineCost"></td></tr>
+    <tr><td>アスベスト調査費</td><td id="asbestosCost"></td></tr>
+    <tr><td>木くず処分費</td><td id="woodWasteCost"></td></tr>
+    <tr><td>鉄 買取</td><td id="ironValue"></td></tr>
   </table>
 
-  <div id="totalPrice">合計金額：0円</div>
-  <div style="text-align:center;">
-    <button onclick="downloadPDF()">📄 PDF出力</button>
-  </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
-
     const structure = params.get("structure") || "木造";
     const area = parseFloat(params.get("area") || 0);
     const scaffold = parseFloat(params.get("scaffold") || 0);
-    const wood = parseFloat(params.get("woodWaste") || 0);
-    const board = parseFloat(params.get("boardWaste") || 0);
-    const plastic = parseFloat(params.get("plasticWaste") || 0);
-    const rubble = parseFloat(params.get("rubbleWaste") || 0);
-    const glass = parseFloat(params.get("glassWaste") || 0);
-    const ceramic = parseFloat(params.get("ceramicWaste") || 0);
+    const address = params.get("address") || "";
+    const woodWaste = parseFloat(params.get("woodWaste") || 0);
+    const ironKg = parseFloat(params.get("ironWeight") || 0);
 
-    // 単価（設定ファイル化予定）
-    const unitPrices = {
-      木造: 33000 / 3.3,
-      RC造: 50000 / 3.3,
-      S造: 33000 / 3.3,
-      軽量鉄骨造: 33000 / 3.3
-    };
-    const scaffoldUnit = 600;
-    const asbestosSurvey = 90000;
-    const wastePrices = {
-      wood: 16,
-      board: 35,
-      plastic: 50,
-      rubble: 2,
-      glass: 10,
-      ceramic: 20
-    };
+    document.getElementById("structure").textContent = structure;
+    document.getElementById("area").textContent = area;
+    document.getElementById("scaffold").textContent = scaffold;
+    document.getElementById("address").textContent = address;
 
-    // 計算
-    const demolitionCost = Math.round(area * unitPrices[structure]);
-    const scaffoldCost = Math.round(scaffold * scaffoldUnit);
-    const wasteCost = 
-      wood * wastePrices.wood +
-      board * wastePrices.board +
-      plastic * wastePrices.plastic +
-      rubble * wastePrices.rubble +
-      glass * wastePrices.glass +
-      ceramic * wastePrices.ceramic;
+    const demolitionCost = Math.round(area * UNIT_PRICES[structure]);
+    const scaffoldCost = Math.round(scaffold * UNIT_PRICES.足場㎡);
+    const machineCost = UNIT_PRICES.重機回送費_10km以内;
+    const asbestosCost = UNIT_PRICES.アスベスト調査費;
+    const woodWasteCost = Math.round(woodWaste * UNIT_PRICES.木くず処分);
+    const ironValue = Math.round(ironKg * UNIT_PRICES.鉄買取);
 
-    const total = demolitionCost + scaffoldCost + asbestosSurvey + wasteCost;
-
-    // 表示
-    const body = document.getElementById("estimateBody");
-    const addRow = (label, value) => {
-      const row = document.createElement("tr");
-      row.innerHTML = `<td>${label}</td><td>${value.toLocaleString()} 円</td>`;
-      body.appendChild(row);
-    };
-
-    addRow("解体工事費", demolitionCost);
-    addRow("足場費", scaffoldCost);
-    addRow("アスベスト調査費", asbestosSurvey);
-    addRow("産廃処分費", Math.round(wasteCost));
-
-    document.getElementById("totalPrice").innerText = `合計金額：${total.toLocaleString()} 円`;
-
-    // PDF出力
-    async function downloadPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(16);
-      doc.text("御見積内訳書", 105, 20, { align: "center" });
-
-      let y = 30;
-      const rows = document.querySelectorAll("#estimateBody tr");
-      doc.setFontSize(12);
-      rows.forEach(row => {
-        const cols = row.querySelectorAll("td");
-        const line = Array.from(cols).map(td => td.textContent.trim()).join("：");
-        doc.text(line, 15, y);
-        y += 8;
-      });
-
-      doc.setFontSize(14);
-      doc.text(document.getElementById("totalPrice").innerText, 15, y + 10);
-
-      doc.save("MiTAS_見積書.pdf");
-    }
+    document.getElementById("demolitionCost").textContent = `${demolitionCost.toLocaleString()} 円`;
+    document.getElementById("scaffoldCost").textContent = `${scaffoldCost.toLocaleString()} 円`;
+    document.getElementById("machineCost").textContent = `${machineCost.toLocaleString()} 円`;
+    document.getElementById("asbestosCost").textContent = `${asbestosCost.toLocaleString()} 円`;
+    document.getElementById("woodWasteCost").textContent = `${woodWasteCost.toLocaleString()} 円`;
+    document.getElementById("ironValue").textContent = `-${ironValue.toLocaleString()} 円`;
   </script>
 </body>
 </html>
