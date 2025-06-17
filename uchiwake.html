@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MiTAS 見積内訳書</title>
+  <meta charset="UTF-8">
+  <title>MiTAS - 見積内訳</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     body {
-      font-family: "IPAexMincho", serif;
+      font-family: 'IPAexMincho', serif;
       margin: 20px;
     }
     h1 {
@@ -15,118 +16,73 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 1em;
+      margin-top: 20px;
     }
     th, td {
-      border: 1px solid #333;
-      padding: 8px;
+      border: 1px solid #000;
+      padding: 6px;
       text-align: left;
-    }
-    .total {
-      font-weight: bold;
-      font-size: 1.2em;
-      text-align: right;
     }
     #downloadBtn {
       margin-top: 20px;
-      display: block;
+      padding: 10px 20px;
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
-  <h1>御見積書</h1>
-  <table id="estimateTable">
-    <thead>
-      <tr>
-        <th>項目</th>
-        <th>数量</th>
-        <th>単価</th>
-        <th>金額</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>解体工事費</td><td id="areaCell"></td><td id="unitPriceCell"></td><td id="demolitionCostCell"></td></tr>
-      <tr><td>足場工事費</td><td id="scaffoldCell"></td><td>600円</td><td id="scaffoldCostCell"></td></tr>
-      <tr><td>アスベスト調査費</td><td>1式</td><td>90,000円</td><td>90,000円</td></tr>
-      <tr><td>産廃処分費（木くず）</td><td id="woodCell"></td><td>16円</td><td id="woodCostCell"></td></tr>
-      <tr><td>産廃処分費（ボード類）</td><td id="boardCell"></td><td>35円</td><td id="boardCostCell"></td></tr>
-      <tr><td>産廃処分費（廃プラ類）</td><td id="plasticCell"></td><td>50円</td><td id="plasticCostCell"></td></tr>
-      <tr><td>産廃処分費（ガラ）</td><td id="rubbleCell"></td><td>2円</td><td id="rubbleCostCell"></td></tr>
-      <tr><td>産廃処分費（ガラス）</td><td id="glassCell"></td><td>10円</td><td id="glassCostCell"></td></tr>
-      <tr><td>産廃処分費（陶器）</td><td id="ceramicCell"></td><td>20円</td><td id="ceramicCostCell"></td></tr>
-      <tr><td colspan="3" class="total">合計金額（税込）</td><td id="totalCell"></td></tr>
-    </tbody>
-  </table>
+  <h1>見積内訳書</h1>
 
-  <button id="downloadBtn">PDFで保存</button>
+  <div id="estimateContent">
+    <table>
+      <tbody>
+        <tr><th>建物構造</th><td id="structure"></td></tr>
+        <tr><th>延床面積（㎡）</th><td id="area"></td></tr>
+        <tr><th>現場住所</th><td id="address"></td></tr>
+        <tr><th>足場面積（㎡）</th><td id="scaffold"></td></tr>
+        <tr><th>残置物</th><td id="leftovers"></td></tr>
+        <tr><th>付帯工事</th><td id="additional"></td></tr>
+        <tr><th>木くず（kg）</th><td id="woodWaste"></td></tr>
+        <tr><th>ボード類（kg）</th><td id="boardWaste"></td></tr>
+        <tr><th>廃プラ類（kg）</th><td id="plasticWaste"></td></tr>
+        <tr><th>ガラ（kg）</th><td id="rubbleWaste"></td></tr>
+        <tr><th>ガラス（kg）</th><td id="glassWaste"></td></tr>
+        <tr><th>陶器（kg）</th><td id="ceramicWaste"></td></tr>
+      </tbody>
+    </table>
+  </div>
 
-  <!-- jsPDF + html2canvas CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <button id="downloadBtn" onclick="downloadPDF()">PDF出力</button>
 
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const structure = urlParams.get('structure');
-    const area = parseFloat(urlParams.get('area')) || 0;
-    const scaffold = parseFloat(urlParams.get('scaffold')) || 0;
-    const wood = parseFloat(urlParams.get('woodWaste')) || 0;
-    const board = parseFloat(urlParams.get('boardWaste')) || 0;
-    const plastic = parseFloat(urlParams.get('plasticWaste')) || 0;
-    const rubble = parseFloat(urlParams.get('rubbleWaste')) || 0;
-    const glass = parseFloat(urlParams.get('glassWaste')) || 0;
-    const ceramic = parseFloat(urlParams.get('ceramicWaste')) || 0;
+    function getParam(key) {
+      return new URLSearchParams(window.location.search).get(key) || '';
+    }
 
-    const unitPrices = {
-      '木造': 33000,
-      'RC造': 50000,
-      'S造': 33000,
-      '軽量鉄骨造': 33000
-    };
+    document.getElementById('structure').textContent = getParam('structure');
+    document.getElementById('area').textContent = getParam('area');
+    document.getElementById('address').textContent = getParam('address');
+    document.getElementById('scaffold').textContent = getParam('scaffold');
+    document.getElementById('leftovers').textContent = getParam('leftovers');
+    document.getElementById('additional').textContent = getParam('additional');
+    document.getElementById('woodWaste').textContent = getParam('woodWaste');
+    document.getElementById('boardWaste').textContent = getParam('boardWaste');
+    document.getElementById('plasticWaste').textContent = getParam('plasticWaste');
+    document.getElementById('rubbleWaste').textContent = getParam('rubbleWaste');
+    document.getElementById('glassWaste').textContent = getParam('glassWaste');
+    document.getElementById('ceramicWaste').textContent = getParam('ceramicWaste');
 
-    const unitPrice = unitPrices[structure] || 0;
-    const demolitionCost = Math.round((area / 3.3) * unitPrice);
-    const scaffoldCost = Math.round(scaffold * 600);
-    const woodCost = Math.round(wood * 16);
-    const boardCost = Math.round(board * 35);
-    const plasticCost = Math.round(plastic * 50);
-    const rubbleCost = Math.round(rubble * 2);
-    const glassCost = Math.round(glass * 10);
-    const ceramicCost = Math.round(ceramic * 20);
-
-    const total = demolitionCost + scaffoldCost + 90000 + woodCost + boardCost + plasticCost + rubbleCost + glassCost + ceramicCost;
-
-    document.getElementById("areaCell").textContent = `${area}㎡`;
-    document.getElementById("unitPriceCell").textContent = `${unitPrice.toLocaleString()}円`;
-    document.getElementById("demolitionCostCell").textContent = `${demolitionCost.toLocaleString()}円`;
-    document.getElementById("scaffoldCell").textContent = `${scaffold}㎡`;
-    document.getElementById("scaffoldCostCell").textContent = `${scaffoldCost.toLocaleString()}円`;
-    document.getElementById("woodCell").textContent = `${wood}kg`;
-    document.getElementById("woodCostCell").textContent = `${woodCost.toLocaleString()}円`;
-    document.getElementById("boardCell").textContent = `${board}kg`;
-    document.getElementById("boardCostCell").textContent = `${boardCost.toLocaleString()}円`;
-    document.getElementById("plasticCell").textContent = `${plastic}kg`;
-    document.getElementById("plasticCostCell").textContent = `${plasticCost.toLocaleString()}円`;
-    document.getElementById("rubbleCell").textContent = `${rubble}kg`;
-    document.getElementById("rubbleCostCell").textContent = `${rubbleCost.toLocaleString()}円`;
-    document.getElementById("glassCell").textContent = `${glass}kg`;
-    document.getElementById("glassCostCell").textContent = `${glassCost.toLocaleString()}円`;
-    document.getElementById("ceramicCell").textContent = `${ceramic}kg`;
-    document.getElementById("ceramicCostCell").textContent = `${ceramicCost.toLocaleString()}円`;
-    document.getElementById("totalCell").textContent = `${total.toLocaleString()}円`;
-
-    // PDF出力機能
-    document.getElementById("downloadBtn").addEventListener("click", () => {
-      const { jsPDF } = window.jspdf;
-      html2canvas(document.body).then((canvas) => {
-        const imgData = canvas.toDataURL("image/png");
-        const pdf = new jsPDF("p", "mm", "a4");
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-        pdf.save("MiTAS_見積書.pdf");
-      });
-    });
+    function downloadPDF() {
+      const element = document.getElementById("estimateContent");
+      const opt = {
+        margin: 0.5,
+        filename: '見積書.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    }
   </script>
 </body>
 </html>
