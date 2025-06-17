@@ -100,3 +100,17 @@
 <label>ガラ：<input type="number" id="rubbleWaste" /> kg</label><br/>
 <label>ガラス：<input type="number" id="glassWaste" /> kg</label><br/>
 <label>陶器：<input type="number" id="ceramicWaste" /> kg</label><br/>
+const params = new URLSearchParams({
+  structure,
+  area,
+  address,
+  scaffold: scaffoldArea,
+  leftovers,
+  additional,
+  woodWaste: document.getElementById("woodWaste").value,
+  boardWaste: document.getElementById("boardWaste").value,
+  plasticWaste: document.getElementById("plasticWaste").value,
+  rubbleWaste: document.getElementById("rubbleWaste").value,
+  glassWaste: document.getElementById("glassWaste").value,
+  ceramicWaste: document.getElementById("ceramicWaste").value
+});
