@@ -1,4 +1,4 @@
-// Firebase初期化
+// Firebaseの設定（あなたのプロジェクト専用情報）
 const firebaseConfig = {
   apiKey: "AIzaSyAN1cDb1yBdYBzEXQ2CD8anlih7YuPXggo",
   authDomain: "mitas-estimate.firebaseapp.com",
@@ -9,25 +9,32 @@ const firebaseConfig = {
   measurementId: "G-Y0H10QQQ16"
 };
 
+// 初期化
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// 保存処理
-function saveEstimateToFirebase(data) {
-  return db.collection("estimates").add(data);
+// 見積を保存する
+async function saveEstimate(formData) {
+  const docRef = await db.collection("estimates").add({
+    ...formData,
+    timestamp: new Date()
+  });
+  return docRef.id;
 }
 
-// 一覧取得
-function fetchEstimatesFromFirebase() {
-  return db.collection("estimates").orderBy("timestamp", "desc").get();
+// 一覧を取得する
+async function getEstimates() {
+  const snapshot = await db.collection("estimates").orderBy("timestamp", "desc").get();
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
-// ID指定で取得
-function fetchEstimateById(id) {
-  return db.collection("estimates").doc(id).get();
+// 1件取得
+async function getEstimateById(id) {
+  const doc = await db.collection("estimates").doc(id).get();
+  return doc.exists ? doc.data() : null;
 }
 
-// ID指定で更新
-function updateEstimateById(id, data) {
-  return db.collection("estimates").doc(id).update(data);
+// 見積を更新する
+async function updateEstimate(id, data) {
+  await db.collection("estimates").doc(id).update(data);
 }
