@@ -3,103 +3,99 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MiTAS 見積フォーム</title>
+  <title>MiTAS 見積作成</title>
   <style>
-    body { font-family: 'IPAexMincho', serif; padding: 20px; background: #f8f8f8; }
-    h1 { color: #2c3e50; }
-    label, input, select { display: block; margin: 10px 0; width: 100%; }
-    input, select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-    button { padding: 10px 15px; background: #2c3e50; color: white; border: none; border-radius: 4px; }
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f8f8f8;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #2c3e50;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    form {
+      padding: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #dcdcdc;
+      border-radius: 4px;
+      background-color: #ffffff;
+    }
+    button {
+      width: 100%;
+      background-color: #2c3e50;
+      color: white;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 4px;
+    }
+    .photo-upload {
+      border: 1px solid #dcdcdc;
+      background-color: #ffffff;
+      padding: 10px;
+      margin-bottom: 15px;
+    }
   </style>
 </head>
 <body>
-  <h1>MiTAS 見積作成</h1>
-  <form id="estimateForm">
-    <label>建物構造：
-      <select id="structure">
-        <option value="木造">木造</option>
-        <option value="RC造">RC造</option>
-        <option value="S造">S造</option>
-        <option value="軽量鉄骨造">軽量鉄骨造</option>
-      </select>
-    </label>
+  <header>MiTAS</header>
+  <form action="uchiwake.html" method="get">
+    <label for="structure">建物構造</label>
+    <select name="structure" id="structure" required>
+      <option value="木造">木造</option>
+      <option value="RC造">RC造</option>
+      <option value="S造">S造</option>
+      <option value="軽量鉄骨造">軽量鉄骨造</option>
+    </select>
 
-    <label>延床面積（㎡）：<input type="number" id="area" required /></label>
-    <label>現場住所：<input type="text" id="address" required /></label>
-    <label>足場面積（㎡）：<input type="number" id="scaffoldArea" /></label>
+    <label for="area">延床面積（㎡）</label>
+    <input type="number" name="area" id="area" required />
 
-    <label>残置物の有無：
-      <input type="radio" name="leftovers" value="あり">あり
-      <input type="radio" name="leftovers" value="なし" checked>なし
-    </label>
+    <label for="scaffold">足場面積（㎡）</label>
+    <input type="number" name="scaffold" id="scaffold" required />
 
-    <label>付帯工事の有無：
-      <input type="radio" name="additional" value="あり">あり
-      <input type="radio" name="additional" value="なし" checked>なし
-    </label>
+    <label for="address">現場住所</label>
+    <input type="text" name="address" id="address" required />
 
-    <h3>発生材（kg）</h3>
-    <label>木くず：<input type="number" id="woodWaste" /></label>
-    <label>ボード類：<input type="number" id="boardWaste" /></label>
-    <label>廃プラ類：<input type="number" id="plasticWaste" /></label>
-    <label>ガラ：<input type="number" id="rubbleWaste" /></label>
-    <label>ガラス：<input type="number" id="glassWaste" /></label>
-    <label>陶器：<input type="number" id="ceramicWaste" /></label>
+    <label for="woodWaste">木くず（kg）</label>
+    <input type="number" name="woodWaste" id="woodWaste" />
+
+    <label for="boardWaste">ボード類（kg）</label>
+    <input type="number" name="boardWaste" id="boardWaste" />
+
+    <label for="plasticWaste">廃プラ類（kg）</label>
+    <input type="number" name="plasticWaste" id="plasticWaste" />
+
+    <label for="rubbleWaste">ガラ（kg）</label>
+    <input type="number" name="rubbleWaste" id="rubbleWaste" />
+
+    <label for="glassWaste">ガラス（kg）</label>
+    <input type="number" name="glassWaste" id="glassWaste" />
+
+    <label for="ceramicWaste">陶器（kg）</label>
+    <input type="number" name="ceramicWaste" id="ceramicWaste" />
+
+    <div class="photo-upload">
+      <label>現場写真（最大5枚）</label>
+      <input type="file" name="photos" accept="image/*" multiple />
+    </div>
 
     <button type="submit">見積作成</button>
   </form>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-
-  <script>
-    // あとで【B】で差し替える firebaseConfig
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    document.getElementById("estimateForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-
-      const structure = document.getElementById("structure").value;
-      const area = document.getElementById("area").value;
-      const address = document.getElementById("address").value;
-      const scaffoldArea = document.getElementById("scaffoldArea").value;
-      const leftovers = document.querySelector('input[name="leftovers"]:checked')?.value || "";
-      const additional = document.querySelector('input[name="additional"]:checked')?.value || "";
-
-      const data = {
-        structure,
-        area,
-        address,
-        scaffoldArea,
-        leftovers,
-        additional,
-        woodWaste: document.getElementById("woodWaste").value,
-        boardWaste: document.getElementById("boardWaste").value,
-        plasticWaste: document.getElementById("plasticWaste").value,
-        rubbleWaste: document.getElementById("rubbleWaste").value,
-        glassWaste: document.getElementById("glassWaste").value,
-        ceramicWaste: document.getElementById("ceramicWaste").value,
-        createdAt: new Date()
-      };
-
-      db.collection("estimates").add(data).then(() => {
-        const params = new URLSearchParams(data).toString();
-        window.location.href = `uchiwake.html?${params}`;
-      }).catch((error) => {
-        alert("保存エラー：" + error);
-      });
-    });
-  </script>
 </body>
 </html>
