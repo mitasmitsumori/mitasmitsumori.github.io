@@ -1,44 +1,45 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>見積編集 - MiTAS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { font-family: 'IPAexMincho', serif; padding: 20px; background: #f8f8f8; }
-    h1 { text-align: center; color: #2c3e50; }
+    h1 { font-size: 22px; color: #2c3e50; }
     label { display: block; margin-top: 10px; }
-    input, select { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
-    button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
+    input, select { width: 100%; padding: 6px; font-size: 16px; }
+    button { margin-top: 20px; padding: 10px; background: #2c3e50; color: white; border: none; font-size: 16px; }
   </style>
 </head>
 <body>
-  <h1>見積内容の編集</h1>
+  <h1>見積データ編集</h1>
+  <form id="editForm">
+    <label>お客様名：<input type="text" name="customerName" /></label>
+    <label>工事名：<input type="text" name="projectName" /></label>
+    <label>延床面積（㎡）：<input type="number" name="area" /></label>
+    <label>足場面積（㎡）：<input type="number" name="scaffold" /></label>
+    <label>構造種別：
+      <select name="structure">
+        <option value="木造">木造</option>
+        <option value="RC造">RC造</option>
+        <option value="S造">S造</option>
+        <option value="軽量鉄骨造">軽量鉄骨造</option>
+      </select>
+    </label>
+    <label>木くず（kg）：<input type="number" name="woodWaste" /></label>
+    <label>ボード類（kg）：<input type="number" name="boardWaste" /></label>
+    <label>廃プラ類（kg）：<input type="number" name="plasticWaste" /></label>
+    <label>ガラ（kg）：<input type="number" name="rubbleWaste" /></label>
+    <label>ガラス（kg）：<input type="number" name="glassWaste" /></label>
+    <label>陶器（kg）：<input type="number" name="ceramicWaste" /></label>
+    <button type="submit">保存して内訳を表示</button>
+  </form>
 
-  <label>建物構造：
-    <select id="structure">
-      <option value="木造">木造</option>
-      <option value="RC造">RC造</option>
-      <option value="S造">S造</option>
-      <option value="軽量鉄骨造">軽量鉄骨造</option>
-    </select>
-  </label>
-  <label>延床面積（㎡）：
-    <input type="number" id="area" />
-  </label>
-  <label>足場面積（㎡）：
-    <input type="number" id="scaffold" />
-  </label>
-  <label>現場住所：
-    <input type="text" id="address" />
-  </label>
-
-  <button onclick="saveData()">保存する</button>
-
-  <!-- Firebase -->
+  <!-- Firebase SDK -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAN1cDb1yBdYBzEXQ2CD8anlih7YuPXggo",
@@ -55,38 +56,29 @@
 
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
-
-    const structureEl = document.getElementById("structure");
-    const areaEl = document.getElementById("area");
-    const scaffoldEl = document.getElementById("scaffold");
-    const addressEl = document.getElementById("address");
+    const form = document.getElementById("editForm");
 
     async function loadData() {
-      if (!id) return;
       const docRef = doc(db, "estimates", id);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data();
-        structureEl.value = data.structure || "";
-        areaEl.value = data.area || 0;
-        scaffoldEl.value = data.scaffold || 0;
-        addressEl.value = data.address || "";
-      } else {
-        alert("見積データが見つかりません。");
+        for (const key in data) {
+          if (form.elements[key]) form.elements[key].value = data[key];
+        }
       }
     }
 
-    async function saveData() {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = {};
+      for (const element of form.elements) {
+        if (element.name) formData[element.name] = element.value;
+      }
       const docRef = doc(db, "estimates", id);
-      await updateDoc(docRef, {
-        structure: structureEl.value,
-        area: parseFloat(areaEl.value || 0),
-        scaffold: parseFloat(scaffoldEl.value || 0),
-        address: addressEl.value
-      });
-      alert("保存しました。");
-      window.location.href = "list.html";
-    }
+      await updateDoc(docRef, formData);
+      window.location.href = `uchiwake.html?id=${id}`;
+    });
 
     loadData();
   </script>
