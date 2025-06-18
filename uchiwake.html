@@ -5,13 +5,13 @@
   <title>御見積内訳書 - MiTAS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
-    body { font-family: 'IPAexMincho', serif; margin: 20px; background: #fff; }
-    h1 { text-align: center; font-size: 22px; margin-bottom: 10px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { border: 1px solid #333; padding: 6px; font-size: 13px; text-align: center; }
+    body { font-family: 'IPAexMincho', serif; margin: 20px; }
+    h1 { text-align: center; font-size: 24px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #333; padding: 8px; font-size: 14px; }
     th { background: #f0f0f0; }
-    .total { font-weight: bold; background: #e8e8e8; }
-    #downloadBtn { margin-top: 20px; padding: 10px 20px; font-size: 15px; }
+    .total { font-weight: bold; }
+    #downloadBtn { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
   </style>
 </head>
 <body>
@@ -36,57 +36,56 @@
   </table>
   <button id="downloadBtn">PDFを出力する</button>
 
-  <!-- 外部ライブラリ読み込み -->
+  <!-- 外部ライブラリ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
-  <!-- 単価設定ファイル -->
+  <!-- 共通ファイル -->
+  <script src="firebase.js"></script>
   <script src="settings.js"></script>
-
-  <!-- 自動計算ロジック -->
   <script src="calc.js"></script>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const data = {
-      structure: params.get("structure"),
-      area: parseFloat(params.get("area") || 0),
-      scaffold: parseFloat(params.get("scaffold") || 0),
-      woodWaste: parseFloat(params.get("woodWaste") || 0),
-      boardWaste: parseFloat(params.get("boardWaste") || 0),
-      plasticWaste: parseFloat(params.get("plasticWaste") || 0),
-      rubbleWaste: parseFloat(params.get("rubbleWaste") || 0),
-      glassWaste: parseFloat(params.get("glassWaste") || 0),
-      ceramicWaste: parseFloat(params.get("ceramicWaste") || 0),
-      ironWeight: parseFloat(params.get("ironWeight") || 0),
-      aluminumWeight: parseFloat(params.get("aluminumWeight") || 0)
-    };
+    async function loadEstimateAndDisplay() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("id");
+      if (!id) return alert("見積IDがありません");
 
-    const result = calculateEstimate(data, SETTINGS);
-    const table = document.getElementById("estimateBody");
-    let total = 0;
+      const doc = await db.collection("estimates").doc(id).get();
+      if (!doc.exists) return alert("見積データが見つかりません");
 
-    for (const [label, qty, unit, unitPrice, amount] of result.rows) {
-      const row = `<tr>
-        <td>${label}</td>
-        <td>${qty}</td>
-        <td>${unit}</td>
-        <td>${unitPrice.toLocaleString()}</td>
-        <td>${amount.toLocaleString()}</td>
-      </tr>`;
-      table.insertAdjacentHTML("beforeend", row);
-      total += amount;
+      const data = doc.data();
+      const result = calculateEstimate(data, SETTINGS);
+
+      const table = document.getElementById("estimateBody");
+      let total = 0;
+
+      for (const [label, qty, unit, unitPrice, amount] of result.rows) {
+        const row = `<tr>
+          <td>${label}</td>
+          <td>${qty}</td>
+          <td>${unit}</td>
+          <td>${unitPrice.toLocaleString()}</td>
+          <td>${amount.toLocaleString()}</td>
+        </tr>`;
+        table.insertAdjacentHTML("beforeend", row);
+        total += amount;
+      }
+
+      document.getElementById("totalPrice").textContent = total.toLocaleString() + " 円";
+
+      document.getElementById("downloadBtn").addEventListener("click", () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text("御見積内訳書", 80, 15);
+        doc.autoTable({ html: '#estimateTable', startY: 25 });
+        doc.save("見積書.pdf");
+      });
     }
 
-    document.getElementById("totalPrice").textContent = total.toLocaleString() + " 円";
-
-    document.getElementById("downloadBtn").addEventListener("click", () => {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.text("御見積内訳書", 80, 15);
-      doc.autoTable({ html: '#estimateTable', startY: 25 });
-      doc.save("見積書.pdf");
-    });
+    loadEstimateAndDisplay();
   </script>
 </body>
 </html>
