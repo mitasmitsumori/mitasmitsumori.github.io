@@ -1,53 +1,49 @@
-function calculateEstimate(data, settings) {
-  const {
-    structure,
-    area,
-    scaffold,
-    woodWaste,
-    boardWaste,
-    plasticWaste,
-    rubbleWaste,
-    glassWaste,
-    ceramicWaste
-  } = data;
-
+function calculateEstimate(data, SETTINGS) {
   const rows = [];
 
   // 解体工事費
-  const unitPrice = settings.structureUnitPrices[structure] || 0;
-  const demolition = Math.round(area * unitPrice);
-  rows.push(["解体工事費", area, "㎡", unitPrice, demolition]);
+  const demolitionUnit = SETTINGS.demolitionUnitPrices[data.structure] || 0;
+  const demolitionAmount = Math.round(data.area * demolitionUnit);
+  rows.push(["解体工事費", data.area, "㎡", demolitionUnit, demolitionAmount]);
 
-  // 足場費
-  const scaffoldPrice = Math.round(scaffold * settings.scaffoldUnitPrice);
-  rows.push(["足場工事費", scaffold, "㎡", settings.scaffoldUnitPrice, scaffoldPrice]);
-
-  // 重機回送費（仮：10km以内）
-  const transportFee = settings.machineTransportFee["10km以内"];
-  rows.push(["重機回送費", 1, "式", transportFee, transportFee]);
+  // 足場工事費
+  const scaffoldAmount = Math.round(data.scaffold * SETTINGS.scaffoldUnitPrice);
+  rows.push(["足場工事費", data.scaffold, "㎡", SETTINGS.scaffoldUnitPrice, scaffoldAmount]);
 
   // アスベスト調査費（固定）
-  const asbestosFee = settings.asbestosSurveyFee;
-  rows.push(["アスベスト調査費", 1, "式", asbestosFee, asbestosFee]);
+  const surveyFee = SETTINGS.surveyFee;
+  rows.push(["アスベスト調査費", 1, "式", surveyFee, surveyFee]);
 
-  // 産廃処分費
-  const disposalItems = [
-    ["木くず", woodWaste],
-    ["ボード類", boardWaste],
-    ["廃プラ類", plasticWaste],
-    ["ガラ", rubbleWaste],
-    ["ガラス", glassWaste],
-    ["陶器", ceramicWaste]
-  ];
+  // 重機回送費（仮に10km未満とする）
+  const transportFee = SETTINGS.machineTransportFee.under10km;
+  rows.push(["重機回送費", 1, "式", transportFee, transportFee]);
 
-  disposalItems.forEach(([label, qty]) => {
-    const unit = "kg";
-    const price = settings.disposalUnitPrices[label] || 0;
-    const amount = Math.round(qty * price);
-    rows.push([`${label}（処分費）`, qty, unit, price, amount]);
-  });
+  // 産廃処分費（各種）
+  const wasteTypes = {
+    "木くず": data.woodWaste,
+    "ボード類": data.boardWaste,
+    "廃プラ類": data.plasticWaste,
+    "ガラ": data.rubbleWaste,
+    "ガラス": data.glassWaste,
+    "陶器": data.ceramicWaste
+  };
+  for (const [type, qty] of Object.entries(wasteTypes)) {
+    const unitPrice = SETTINGS.wasteUnitPrices[type] || 0;
+    const amount = Math.round(qty * unitPrice);
+    rows.push([`${type}（処分費）`, qty, "kg", unitPrice, amount]);
+  }
 
-  const totalAmount = rows.reduce((sum, row) => sum + row[4], 0);
+  // 有価物買取（ここでは仮に0kgとする）
+  const recyclableTypes = SETTINGS.recyclableUnitPrices;
+  for (const [type, unitPrice] of Object.entries(recyclableTypes)) {
+    rows.push([`${type}（買取）`, 0, "kg", unitPrice, 0]);
+  }
 
-  return { rows, totalAmount };
+  // 発生材運搬費（ここでは仮に0㎥とする）
+  const transportTypes = SETTINGS.transportFeesPerCubicMeter;
+  for (const [type, unitPrice] of Object.entries(transportTypes)) {
+    rows.push([`${type}運搬費`, 0, "㎥", unitPrice, 0]);
+  }
+
+  return { rows };
 }
