@@ -1,81 +1,18 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <title>MiTAS 見積作成フォーム</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <style>
-    body { font-family: 'IPAexMincho', serif; background: #f8f8f8; margin: 0; padding: 20px; }
-    h1 { background: #2c3e50; color: white; padding: 15px; text-align: center; }
-    label { display: block; margin-top: 10px; font-weight: bold; }
-    input, select { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 10px; box-sizing: border-box; border: 1px solid #dcdcdc; background: white; }
-    button { background: #2c3e50; color: white; border: none; padding: 12px 20px; font-size: 16px; width: 100%; }
-    .form-group { margin-bottom: 15px; }
-  </style>
-</head>
-<body>
-  <h1>MiTAS 見積作成フォーム</h1>
-  <form id="estimateForm">
-    <div class="form-group">
-      <label for="structure">建物構造</label>
-      <select id="structure" name="structure" required>
-        <option value="">選択してください</option>
-        <option value="木造">木造</option>
-        <option value="RC造">RC造</option>
-        <option value="S造">S造</option>
-        <option value="軽量鉄骨造">軽量鉄骨造</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label for="area">延床面積 (㎡)</label>
-      <input type="number" id="area" name="area" required />
-    </div>
-
-    <div class="form-group">
-      <label for="scaffold">足場面積 (㎡)</label>
-      <input type="number" id="scaffold" name="scaffold" required />
-    </div>
-
-    <div class="form-group">
-      <label for="woodWaste">木くず (kg)</label>
-      <input type="number" id="woodWaste" name="woodWaste" />
-    </div>
-
-    <div class="form-group">
-      <label for="boardWaste">ボード類 (kg)</label>
-      <input type="number" id="boardWaste" name="boardWaste" />
-    </div>
-
-    <div class="form-group">
-      <label for="plasticWaste">廃プラ類 (kg)</label>
-      <input type="number" id="plasticWaste" name="plasticWaste" />
-    </div>
-
-    <div class="form-group">
-      <label for="rubbleWaste">ガラ (kg)</label>
-      <input type="number" id="rubbleWaste" name="rubbleWaste" />
-    </div>
-
-    <div class="form-group">
-      <label for="glassWaste">ガラス (kg)</label>
-      <input type="number" id="glassWaste" name="glassWaste" />
-    </div>
-
-    <div class="form-group">
-      <label for="ceramicWaste">陶器 (kg)</label>
-      <input type="number" id="ceramicWaste" name="ceramicWaste" />
-    </div>
-
-    <button type="submit">見積作成</button>
-  </form>
-
-  <script>
-    document.getElementById("estimateForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const params = new URLSearchParams(new FormData(this)).toString();
-      window.location.href = `uchiwake.html?${params}`;
-    });
-  </script>
-</body>
-</html>
+function calculateEstimate(data, settings) {
+  const prices = settings.unitPrices;
+  const rows = [];
+  const pushRow = (label, qty, unit, unitKey) => {
+    const unitPrice = prices[unitKey] || 0;
+    const amount = Math.round(qty * unitPrice);
+    rows.push([label, qty, unit, unitPrice, amount]);
+  };
+  pushRow("解体工事費", data.area, "㎡", data.structure);
+  pushRow("足場工事費", data.scaffold, "㎡", "足場");
+  pushRow("木くず（処分費）", data.woodWaste, "kg", "木くず");
+  pushRow("ボード類", data.boardWaste, "kg", "ボード類");
+  pushRow("廃プラ類", data.plasticWaste, "kg", "廃プラ類");
+  pushRow("ガラ", data.rubbleWaste, "kg", "ガラ");
+  pushRow("ガラス", data.glassWaste, "kg", "ガラス");
+  pushRow("陶器", data.ceramicWaste, "kg", "陶器");
+  return { rows };
+}
