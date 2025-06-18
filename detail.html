@@ -1,49 +1,58 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>見積詳細 - MiTAS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
-    body { font-family: 'IPAexMincho', serif; padding: 20px; background: #f9f9f9; }
+    body { font-family: 'IPAexMincho', serif; padding: 20px; background: #f4f4f4; }
+    .container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #ccc; }
     h1 { text-align: center; margin-bottom: 20px; }
-    .container { background: #fff; padding: 20px; border: 1px solid #ccc; border-radius: 8px; max-width: 600px; margin: auto; }
-    .field { margin-bottom: 10px; }
+    .item { margin-bottom: 10px; }
     .label { font-weight: bold; }
-    .value { margin-left: 10px; }
-    button { margin-top: 20px; padding: 10px 20px; background: #2c3e50; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    .btn-group { margin-top: 20px; text-align: center; }
+    .btn { padding: 10px 20px; background: #2c3e50; color: white; border: none; border-radius: 5px; margin: 5px; cursor: pointer; }
   </style>
 </head>
 <body>
-  <h1>見積詳細</h1>
-  <div class="container" id="estimateDetail">
-    <div class="field"><span class="label">建物構造:</span><span class="value" id="structure"></span></div>
-    <div class="field"><span class="label">延床面積:</span><span class="value" id="area"></span> ㎡</div>
-    <div class="field"><span class="label">足場面積:</span><span class="value" id="scaffold"></span> ㎡</div>
-    <div class="field"><span class="label">木くず:</span><span class="value" id="woodWaste"></span> kg</div>
-    <div class="field"><span class="label">ボード類:</span><span class="value" id="boardWaste"></span> kg</div>
-    <div class="field"><span class="label">廃プラ類:</span><span class="value" id="plasticWaste"></span> kg</div>
-    <div class="field"><span class="label">ガラ:</span><span class="value" id="rubbleWaste"></span> kg</div>
-    <div class="field"><span class="label">ガラス:</span><span class="value" id="glassWaste"></span> kg</div>
-    <div class="field"><span class="label">陶器:</span><span class="value" id="ceramicWaste"></span> kg</div>
-    <button onclick="goBack()">戻る</button>
+  <div class="container">
+    <h1>見積詳細</h1>
+    <div class="item"><span class="label">建物構造:</span> <span id="structure"></span></div>
+    <div class="item"><span class="label">延床面積:</span> <span id="area"></span> ㎡</div>
+    <div class="item"><span class="label">足場面積:</span> <span id="scaffold"></span> ㎡</div>
+    <div class="item"><span class="label">木くず:</span> <span id="woodWaste"></span> kg</div>
+    <div class="item"><span class="label">ボード類:</span> <span id="boardWaste"></span> kg</div>
+    <div class="item"><span class="label">廃プラ類:</span> <span id="plasticWaste"></span> kg</div>
+    <div class="item"><span class="label">ガラ:</span> <span id="rubbleWaste"></span> kg</div>
+    <div class="item"><span class="label">ガラス:</span> <span id="glassWaste"></span> kg</div>
+    <div class="item"><span class="label">陶器:</span> <span id="ceramicWaste"></span> kg</div>
+
+    <div class="btn-group">
+      <button class="btn" id="editBtn">編集</button>
+      <button class="btn" id="pdfBtn">PDF出力</button>
+    </div>
   </div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
-    document.getElementById("structure").textContent = params.get("structure") || "-";
-    document.getElementById("area").textContent = params.get("area") || "-";
-    document.getElementById("scaffold").textContent = params.get("scaffold") || "-";
-    document.getElementById("woodWaste").textContent = params.get("woodWaste") || "-";
-    document.getElementById("boardWaste").textContent = params.get("boardWaste") || "-";
-    document.getElementById("plasticWaste").textContent = params.get("plasticWaste") || "-";
-    document.getElementById("rubbleWaste").textContent = params.get("rubbleWaste") || "-";
-    document.getElementById("glassWaste").textContent = params.get("glassWaste") || "-";
-    document.getElementById("ceramicWaste").textContent = params.get("ceramicWaste") || "-";
 
-    function goBack() {
-      window.history.back();
-    }
+    document.getElementById("structure").textContent = params.get("structure") || '';
+    document.getElementById("area").textContent = params.get("area") || '';
+    document.getElementById("scaffold").textContent = params.get("scaffold") || '';
+    document.getElementById("woodWaste").textContent = params.get("woodWaste") || '';
+    document.getElementById("boardWaste").textContent = params.get("boardWaste") || '';
+    document.getElementById("plasticWaste").textContent = params.get("plasticWaste") || '';
+    document.getElementById("rubbleWaste").textContent = params.get("rubbleWaste") || '';
+    document.getElementById("glassWaste").textContent = params.get("glassWaste") || '';
+    document.getElementById("ceramicWaste").textContent = params.get("ceramicWaste") || '';
+
+    document.getElementById("editBtn").addEventListener("click", () => {
+      window.location.href = `edit.html?${params.toString()}`;
+    });
+
+    document.getElementById("pdfBtn").addEventListener("click", () => {
+      window.location.href = `uchiwake.html?${params.toString()}`;
+    });
   </script>
 </body>
 </html>
