@@ -2,116 +2,97 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
+  <title>見積編集 - MiTAS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MiTAS - 見積編集</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f8f8f8;
-      padding: 20px;
-    }
-    h1 {
-      background: #2c3e50;
-      color: white;
-      padding: 10px;
-      margin: -20px -20px 20px -20px;
-      text-align: center;
-    }
-    label {
-      display: block;
-      margin: 10px 0 5px;
-    }
-    input, select {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ccc;
-      margin-bottom: 10px;
-    }
-    button {
-      background: #2c3e50;
-      color: white;
-      padding: 10px;
-      border: none;
-      width: 100%;
-      font-size: 16px;
-      cursor: pointer;
-    }
+    body { font-family: 'IPAexMincho', serif; background: #f4f4f4; padding: 20px; }
+    .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; border: 1px solid #ccc; }
+    h1 { text-align: center; margin-bottom: 20px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    input, select { width: 100%; padding: 10px; box-sizing: border-box; }
+    button { padding: 10px 20px; background: #2c3e50; color: white; border: none; border-radius: 5px; cursor: pointer; width: 100%; }
   </style>
 </head>
 <body>
-  <h1>見積編集</h1>
-  <form id="editForm">
-    <label>建物構造：
-      <select id="structure">
-        <option value="木造">木造</option>
-        <option value="RC造">RC造</option>
-        <option value="S造">S造</option>
-        <option value="軽量鉄骨造">軽量鉄骨造</option>
-      </select>
-    </label>
-    <label>延床面積（㎡）：<input type="number" id="area" /></label>
-    <label>現場住所：<input type="text" id="address" /></label>
-    <label>足場面積（㎡）：<input type="number" id="scaffoldArea" /></label>
-    <label>木くず（kg）：<input type="number" id="woodWaste" /></label>
-    <label>ボード類（kg）：<input type="number" id="boardWaste" /></label>
-    <label>廃プラ類（kg）：<input type="number" id="plasticWaste" /></label>
-    <label>ガラ（kg）：<input type="number" id="rubbleWaste" /></label>
-    <label>ガラス（kg）：<input type="number" id="glassWaste" /></label>
-    <label>陶器（kg）：<input type="number" id="ceramicWaste" /></label>
-    <button type="submit">保存して内訳表示</button>
-  </form>
+  <div class="container">
+    <h1>見積編集</h1>
+    <form id="editForm">
+      <div class="form-group">
+        <label for="structure">建物構造</label>
+        <select id="structure" name="structure" required>
+          <option value="木造">木造</option>
+          <option value="RC造">RC造</option>
+          <option value="S造">S造</option>
+          <option value="軽量鉄骨造">軽量鉄骨造</option>
+        </select>
+      </div>
+      <div class="form-group"><label>延床面積(㎡)</label><input type="number" id="area" name="area" required /></div>
+      <div class="form-group"><label>足場面積(㎡)</label><input type="number" id="scaffold" name="scaffold" required /></div>
+      <div class="form-group"><label>木くず(kg)</label><input type="number" id="woodWaste" name="woodWaste" required /></div>
+      <div class="form-group"><label>ボード類(kg)</label><input type="number" id="boardWaste" name="boardWaste" required /></div>
+      <div class="form-group"><label>廃プラ類(kg)</label><input type="number" id="plasticWaste" name="plasticWaste" required /></div>
+      <div class="form-group"><label>ガラ(kg)</label><input type="number" id="rubbleWaste" name="rubbleWaste" required /></div>
+      <div class="form-group"><label>ガラス(kg)</label><input type="number" id="glassWaste" name="glassWaste" required /></div>
+      <div class="form-group"><label>陶器(kg)</label><input type="number" id="ceramicWaste" name="ceramicWaste" required /></div>
+      <button type="submit">保存する</button>
+    </form>
+  </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <script src="firebase.js"></script>
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
-  <script>
-    const db = firebase.firestore();
-    const params = new URLSearchParams(location.search);
-    const docId = params.get("id");
+    const firebaseConfig = {
+      apiKey: "AIzaSyAN1cDb1yBdYBzEXQ2CD8anlih7YuPXggo",
+      authDomain: "mitas-estimate.firebaseapp.com",
+      projectId: "mitas-estimate",
+      storageBucket: "mitas-estimate.appspot.com",
+      messagingSenderId: "889863551826",
+      appId: "1:889863551826:web:71577461b5b9d810d4188b",
+      measurementId: "G-Y0H10QQQ16"
+    };
 
-    const form = document.getElementById("editForm");
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    if (docId) {
-      db.collection("estimates").doc(docId).get().then(doc => {
-        const data = doc.data();
-        if (data) {
-          form.structure.value = data.structure;
-          form.area.value = data.area;
-          form.address.value = data.address;
-          form.scaffoldArea.value = data.scaffoldArea;
-          form.woodWaste.value = data.woodWaste;
-          form.boardWaste.value = data.boardWaste;
-          form.plasticWaste.value = data.plasticWaste;
-          form.rubbleWaste.value = data.rubbleWaste;
-          form.glassWaste.value = data.glassWaste;
-          form.ceramicWaste.value = data.ceramicWaste;
-        }
-      });
-    }
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
 
-    form.addEventListener("submit", (e) => {
+    // 値を初期反映
+    document.getElementById("structure").value = params.get("structure") || "木造";
+    document.getElementById("area").value = params.get("area") || "";
+    document.getElementById("scaffold").value = params.get("scaffold") || "";
+    document.getElementById("woodWaste").value = params.get("woodWaste") || "";
+    document.getElementById("boardWaste").value = params.get("boardWaste") || "";
+    document.getElementById("plasticWaste").value = params.get("plasticWaste") || "";
+    document.getElementById("rubbleWaste").value = params.get("rubbleWaste") || "";
+    document.getElementById("glassWaste").value = params.get("glassWaste") || "";
+    document.getElementById("ceramicWaste").value = params.get("ceramicWaste") || "";
+
+    document.getElementById("editForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const newData = {
-        structure: form.structure.value,
-        area: form.area.value,
-        address: form.address.value,
-        scaffoldArea: form.scaffoldArea.value,
-        woodWaste: form.woodWaste.value,
-        boardWaste: form.boardWaste.value,
-        plasticWaste: form.plasticWaste.value,
-        rubbleWaste: form.rubbleWaste.value,
-        glassWaste: form.glassWaste.value,
-        ceramicWaste: form.ceramicWaste.value,
+      const data = {
+        structure: document.getElementById("structure").value,
+        area: document.getElementById("area").value,
+        scaffold: document.getElementById("scaffold").value,
+        woodWaste: document.getElementById("woodWaste").value,
+        boardWaste: document.getElementById("boardWaste").value,
+        plasticWaste: document.getElementById("plasticWaste").value,
+        rubbleWaste: document.getElementById("rubbleWaste").value,
+        glassWaste: document.getElementById("glassWaste").value,
+        ceramicWaste: document.getElementById("ceramicWaste").value,
+        updatedAt: new Date()
       };
 
-      db.collection("estimates").doc(docId).update(newData).then(() => {
-        const params = new URLSearchParams({ id: docId, ...newData });
-        window.location.href = `uchiwake.html?${params.toString()}`;
-      }).catch(err => {
-        alert("更新に失敗しました：" + err);
-      });
+      if (id) {
+        await setDoc(doc(db, "estimates", id), data);
+        alert("保存しました");
+        location.href = `detail.html?${new URLSearchParams({ id, ...data }).toString()}`;
+      } else {
+        alert("IDが見つかりません");
+      }
     });
   </script>
 </body>
