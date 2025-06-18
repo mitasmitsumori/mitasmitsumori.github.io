@@ -1,47 +1,38 @@
 const SETTINGS = {
-  // 解体費（坪単価 → ㎡換算）
   demolitionUnitPrices: {
-    木造: 33000 / 3.3,
-    RC造: 50000 / 3.3,
-    S造: 33000 / 3.3,
-    軽量鉄骨造: 33000 / 3.3
+    "木造": 33000,
+    "RC造": 50000,
+    "S造": 33000,
+    "軽量鉄骨造": 33000
+  },
+  scaffoldUnitPrice: 600, // 円／㎡
+  asbestosSurveyFee: 90000, // 固定費
+
+  heavyMachineryTransportFee: {
+    "10km以内": 14000,
+    "10km以上": 18000,
+    "50〜60km": 35000
   },
 
-  // 足場費（㎡）
-  scaffoldUnitPrice: 600,
-
-  // 重機回送費（距離による）
-  machineTransportFee: {
-    short: 14000,
-    long: 18000,
-    far: 35000
+  wasteDisposalUnitPrices: {
+    "木くず": 16,     // 円/kg
+    "ボード類": 35,
+    "廃プラ類": 50,
+    "ガラ": 2,
+    "ガラス": 10,
+    "陶器": 20
   },
 
-  // アスベスト調査費（固定）
-  asbestosSurveyFee: 90000,
-
-  // 産廃処分費（鹿児島市／kg）
-  wasteUnitPrices: {
-    木くず: 16,
-    ボード類: 35,
-    廃プラ類: 50,
-    ガラ: 2,
-    ガラス: 10,
-    陶器: 20
+  valuableMaterialUnitPrices: {
+    "鉄": 25,       // 円/kg
+    "アルミ": 100
   },
 
-  // 有価物買取（kg）
-  valuableItems: {
-    鉄: 25,
-    アルミ: 100
-  },
-
-  // 発生材運搬費（㎥）
-  transportCosts: {
-    木くず: 2000,
-    コンクリート: 1000,
-    廃プラ: 2000,
-    ガラス・陶器: 2000,
-    石膏ボード: 2000
+  transportCostsPerM3: {
+    "木くず": 2000,      // 円/m3
+    "コンクリート": 1000,
+    "廃プラ": 2000,
+    "ガラス・陶器": 2000,
+    "石膏ボード": 2000
   }
 };
