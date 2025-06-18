@@ -1,40 +1,39 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>見積編集 - MiTAS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: 'IPAexMincho', serif; margin: 20px; }
-    label { display: block; margin-top: 10px; }
-    input, select { width: 100%; padding: 8px; margin-top: 4px; }
-    button { margin-top: 20px; padding: 10px 20px; }
+    body { font-family: 'IPAexMincho', serif; padding: 20px; }
+    label, input, select { display: block; margin-bottom: 10px; font-size: 16px; }
+    button { padding: 10px 20px; font-size: 16px; }
   </style>
 </head>
 <body>
   <h1>見積編集</h1>
   <form id="editForm">
-    <label>建物構造：
+    <label>建物構造
       <select id="structure">
-        <option value="木造">木造</option>
-        <option value="RC造">RC造</option>
-        <option value="S造">S造</option>
-        <option value="軽量鉄骨造">軽量鉄骨造</option>
+        <option>木造</option>
+        <option>RC造</option>
+        <option>S造</option>
+        <option>軽量鉄骨造</option>
       </select>
     </label>
-    <label>延床面積（㎡）：<input type="number" id="area"></label>
-    <label>足場面積（㎡）：<input type="number" id="scaffold"></label>
-    <label>木くず（kg）：<input type="number" id="woodWaste"></label>
-    <label>ボード類（kg）：<input type="number" id="boardWaste"></label>
-    <label>廃プラ類（kg）：<input type="number" id="plasticWaste"></label>
-    <label>ガラ（kg）：<input type="number" id="rubbleWaste"></label>
-    <label>ガラス（kg）：<input type="number" id="glassWaste"></label>
-    <label>陶器（kg）：<input type="number" id="ceramicWaste"></label>
-    <button type="submit">更新する</button>
+    <label>延床面積（㎡）<input type="number" id="area"></label>
+    <label>足場面積（㎡）<input type="number" id="scaffold"></label>
+    <label>木くず（kg）<input type="number" id="woodWaste"></label>
+    <label>ボード類（kg）<input type="number" id="boardWaste"></label>
+    <label>廃プラ類（kg）<input type="number" id="plasticWaste"></label>
+    <label>ガラ（kg）<input type="number" id="rubbleWaste"></label>
+    <label>ガラス（kg）<input type="number" id="glassWaste"></label>
+    <label>陶器（kg）<input type="number" id="ceramicWaste"></label>
+    <button type="submit">保存</button>
   </form>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAN1cDb1yBdYBzEXQ2CD8anlih7YuPXggo",
@@ -51,28 +50,36 @@
     const id = new URLSearchParams(window.location.search).get("id");
     const form = document.getElementById("editForm");
 
-    async function loadData() {
-      const doc = await db.collection("estimates").doc(id).get();
-      if (!doc.exists) return alert("データが見つかりません");
-
-      const data = doc.data();
-      for (const key in data) {
-        if (form[key]) form[key].value = data[key];
-      }
+    if (id) {
+      db.collection("estimates").doc(id).get().then(doc => {
+        if (doc.exists) {
+          const data = doc.data();
+          for (const key in data) {
+            const el = document.getElementById(key);
+            if (el) el.value = data[key];
+          }
+        }
+      });
     }
 
-    form.addEventListener("submit", async (e) => {
+    form.addEventListener("submit", e => {
       e.preventDefault();
-      const data = {};
-      for (const element of form.elements) {
-        if (element.id) data[element.id] = element.value;
-      }
-      await db.collection("estimates").doc(id).update(data);
-      alert("更新が完了しました");
-      window.location.href = "list.html";
+      const data = {
+        structure: document.getElementById("structure").value,
+        area: parseFloat(document.getElementById("area").value || 0),
+        scaffold: parseFloat(document.getElementById("scaffold").value || 0),
+        woodWaste: parseFloat(document.getElementById("woodWaste").value || 0),
+        boardWaste: parseFloat(document.getElementById("boardWaste").value || 0),
+        plasticWaste: parseFloat(document.getElementById("plasticWaste").value || 0),
+        rubbleWaste: parseFloat(document.getElementById("rubbleWaste").value || 0),
+        glassWaste: parseFloat(document.getElementById("glassWaste").value || 0),
+        ceramicWaste: parseFloat(document.getElementById("ceramicWaste").value || 0),
+      };
+      db.collection("estimates").doc(id).set(data).then(() => {
+        alert("保存しました");
+        window.location.href = "list.html";
+      });
     });
-
-    loadData();
   </script>
 </body>
 </html>
