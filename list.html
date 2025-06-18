@@ -3,34 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <title>見積履歴一覧 - MiTAS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
     body { font-family: 'IPAexMincho', serif; padding: 20px; background: #f8f8f8; }
-    h1 { text-align: center; color: #2c3e50; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 10px; font-size: 14px; }
-    th { background-color: #eaeaea; }
-    button { padding: 5px 10px; }
+    h1 { font-size: 22px; color: #2c3e50; }
+    ul { list-style: none; padding: 0; }
+    li { margin-bottom: 10px; background: #fff; border: 1px solid #ccc; padding: 10px; }
+    .btn { background: #2c3e50; color: #fff; padding: 5px 10px; text-decoration: none; margin-left: 10px; border-radius: 4px; }
   </style>
 </head>
 <body>
   <h1>見積履歴一覧</h1>
-  <table>
-    <thead>
-      <tr>
-        <th>作成日</th>
-        <th>現場住所</th>
-        <th>建物構造</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-    <tbody id="estimateList"></tbody>
-  </table>
+  <ul id="estimateList">読み込み中...</ul>
 
-  <!-- Firebase -->
+  <!-- Firebase & Firestore -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAN1cDb1yBdYBzEXQ2CD8anlih7YuPXggo",
@@ -45,24 +34,29 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const listEl = document.getElementById("estimateList");
+    const estimateList = document.getElementById("estimateList");
+    estimateList.innerHTML = "";
 
-    async function fetchEstimates() {
+    async function loadEstimates() {
       const querySnapshot = await getDocs(collection(db, "estimates"));
-      querySnapshot.forEach(doc => {
+      if (querySnapshot.empty) {
+        estimateList.innerHTML = "<li>見積履歴がありません。</li>";
+        return;
+      }
+      querySnapshot.forEach((doc) => {
         const data = doc.data();
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${data.date || "-"}</td>
-          <td>${data.address || "-"}</td>
-          <td>${data.structure || "-"}</td>
-          <td><a href="uchiwake.html?id=${doc.id}"><button>詳細を見る</button></a></td>
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <strong>${data.projectName || "未設定の工事名"}</strong><br>
+          顧客名: ${data.customerName || "不明"}<br>
+          作成日: ${data.createdAt || "不明"}<br>
+          <a class="btn" href="uchiwake.html?id=${doc.id}">内訳を見る</a>
         `;
-        listEl.appendChild(row);
+        estimateList.appendChild(li);
       });
     }
 
-    fetchEstimates();
+    loadEstimates();
   </script>
 </body>
 </html>
