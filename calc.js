@@ -1,35 +1,27 @@
 // calc.js
 
-function calculateEstimate(data, SETTINGS) {
-  const {
-    structure,
-    area,
-    scaffold,
-    woodWaste,
-    boardWaste,
-    plasticWaste,
-    rubbleWaste,
-    glassWaste,
-    ceramicWaste
-  } = data;
-
-  const unitPrices = SETTINGS.unitPrices;
-
+function calculateEstimate(data, settings) {
   const rows = [];
+  const up = settings.unitPrices;
 
-  function add(label, qty, unit, unitPrice) {
-    const amount = Math.round(qty * unitPrice);
-    rows.push([label, qty, unit, unitPrice, amount]);
+  function pushRow(label, qty, unit, pricePerUnit) {
+    const amount = Math.round(qty * pricePerUnit);
+    rows.push([label, qty, unit, pricePerUnit, amount]);
   }
 
-  add("解体工事費", area, "㎡", unitPrices[structure] || 0);
-  add("足場工事費", scaffold, "㎡", unitPrices["足場"]);
-  add("木くず（処分費）", woodWaste, "kg", unitPrices["木くず"]);
-  add("ボード類", boardWaste, "kg", unitPrices["ボード類"]);
-  add("廃プラ類", plasticWaste, "kg", unitPrices["廃プラ類"]);
-  add("ガラ", rubbleWaste, "kg", unitPrices["ガラ"]);
-  add("ガラス", glassWaste, "kg", unitPrices["ガラス"]);
-  add("陶器", ceramicWaste, "kg", unitPrices["陶器"]);
+  // 解体費
+  pushRow("解体工事費", data.area, "㎡", up[data.structure] || 0);
+
+  // 足場費
+  pushRow("足場工事費", data.scaffold, "㎡", up["足場"]);
+
+  // 産廃処分費
+  pushRow("木くず（処分費）", data.woodWaste, "kg", up["木くず"]);
+  pushRow("ボード類", data.boardWaste, "kg", up["ボード類"]);
+  pushRow("廃プラ類", data.plasticWaste, "kg", up["廃プラ類"]);
+  pushRow("ガラ", data.rubbleWaste, "kg", up["ガラ"]);
+  pushRow("ガラス", data.glassWaste, "kg", up["ガラス"]);
+  pushRow("陶器", data.ceramicWaste, "kg", up["陶器"]);
 
   return { rows };
 }
