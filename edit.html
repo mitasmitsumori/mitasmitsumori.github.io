@@ -5,82 +5,87 @@
   <title>見積編集 - MiTAS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: 'IPAexMincho', serif; padding: 20px; }
-    input, select, button { margin-bottom: 10px; padding: 8px; font-size: 16px; width: 100%; max-width: 400px; }
-    label { display: block; margin-top: 10px; }
+    body { font-family: 'IPAexMincho', serif; padding: 20px; background: #f9f9f9; }
+    h1 { color: #2c3e50; }
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    input, select, textarea { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; }
+    button { padding: 10px 20px; background: #2c3e50; color: white; border: none; font-size: 16px; cursor: pointer; }
   </style>
 </head>
 <body>
   <h1>見積編集</h1>
   <form id="editForm">
-    <label>建物構造:
-      <select name="structure">
-        <option value="木造">木造</option>
-        <option value="RC造">RC造</option>
-        <option value="S造">S造</option>
-        <option value="軽量鉄骨造">軽量鉄骨造</option>
-      </select>
-    </label>
-    <label>延床面積（㎡）:<input type="number" name="area" step="0.1"></label>
-    <label>足場面積（㎡）:<input type="number" name="scaffold" step="0.1"></label>
-    <label>木くず（kg）:<input type="number" name="woodWaste" step="1"></label>
-    <label>ボード類（kg）:<input type="number" name="boardWaste" step="1"></label>
-    <label>廃プラ類（kg）:<input type="number" name="plasticWaste" step="1"></label>
-    <label>ガラ（kg）:<input type="number" name="rubbleWaste" step="1"></label>
-    <label>ガラス（kg）:<input type="number" name="glassWaste" step="1"></label>
-    <label>陶器（kg）:<input type="number" name="ceramicWaste" step="1"></label>
-    <button type="submit">保存</button>
+    <label>建物構造</label>
+    <select name="structure" required>
+      <option value="木造">木造</option>
+      <option value="RC造">RC造</option>
+      <option value="S造">S造</option>
+      <option value="軽量鉄骨造">軽量鉄骨造</option>
+    </select>
+
+    <label>延床面積（㎡）</label>
+    <input type="number" name="area" step="0.01" required>
+
+    <label>足場面積（㎡）</label>
+    <input type="number" name="scaffold" step="0.01">
+
+    <label>木くず（kg）</label>
+    <input type="number" name="woodWaste" step="0.01">
+
+    <label>ボード類（kg）</label>
+    <input type="number" name="boardWaste" step="0.01">
+
+    <label>廃プラ類（kg）</label>
+    <input type="number" name="plasticWaste" step="0.01">
+
+    <label>ガラ（kg）</label>
+    <input type="number" name="rubbleWaste" step="0.01">
+
+    <label>ガラス（kg）</label>
+    <input type="number" name="glassWaste" step="0.01">
+
+    <label>陶器（kg）</label>
+    <input type="number" name="ceramicWaste" step="0.01">
+
+    <button type="submit">保存する</button>
   </form>
 
-  <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+  <!-- FirebaseとJS -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="firebase.js"></script>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAN1cDb1yBdYBzEXQ2CD8anlih7YuPXggo",
-      authDomain: "mitas-estimate.firebaseapp.com",
-      projectId: "mitas-estimate",
-      storageBucket: "mitas-estimate.appspot.com",
-      messagingSenderId: "889863551826",
-      appId: "1:889863551826:web:71577461b5b9d810d4188b",
-      measurementId: "G-Y0H10QQQ16"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const docId = params.get("id");
     const form = document.getElementById("editForm");
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const docId = urlParams.get("id");
-
-    async function loadData() {
-      if (!docId) return;
-      const ref = doc(db, "estimates", docId);
-      const snap = await getDoc(ref);
-      if (snap.exists()) {
-        const data = snap.data();
+    // 初期値読込
+    fetchEstimateById(docId).then(doc => {
+      if (doc.exists) {
+        const data = doc.data();
         for (const key in data) {
-          const input = form.elements.namedItem(key);
-          if (input) input.value = data[key];
+          if (form[key]) {
+            form[key].value = data[key];
+          }
         }
       }
-    }
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const data = {};
-      for (const element of form.elements) {
-        if (element.name) {
-          data[element.name] = element.type === "number" ? parseFloat(element.value) || 0 : element.value;
-        }
-      }
-      await setDoc(doc(db, "estimates", docId), data);
-      alert("保存しました");
-      window.location.href = `uchiwake.html?id=${docId}`;
     });
 
-    loadData();
+    // 保存処理
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      const formData = {};
+      for (const el of form.elements) {
+        if (el.name) {
+          formData[el.name] = el.value;
+        }
+      }
+      formData.timestamp = new Date();
+      await updateEstimateById(docId, formData);
+      alert("保存が完了しました");
+      window.location.href = "list.html";
+    });
   </script>
 </body>
 </html>
