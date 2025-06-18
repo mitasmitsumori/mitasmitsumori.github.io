@@ -1,83 +1,116 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>見積編集 - MiTAS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MiTAS - 見積編集</title>
   <style>
-    body { font-family: 'IPAexMincho', serif; padding: 20px; }
-    label, input, select { display: block; margin-bottom: 10px; font-size: 16px; }
-    button { padding: 10px 20px; font-size: 16px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f8f8;
+      padding: 20px;
+    }
+    h1 {
+      background: #2c3e50;
+      color: white;
+      padding: 10px;
+      margin: -20px -20px 20px -20px;
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+    }
+    button {
+      background: #2c3e50;
+      color: white;
+      padding: 10px;
+      border: none;
+      width: 100%;
+      font-size: 16px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <h1>見積編集</h1>
   <form id="editForm">
-    <label>建物構造
+    <label>建物構造：
       <select id="structure">
-        <option>木造</option>
-        <option>RC造</option>
-        <option>S造</option>
-        <option>軽量鉄骨造</option>
+        <option value="木造">木造</option>
+        <option value="RC造">RC造</option>
+        <option value="S造">S造</option>
+        <option value="軽量鉄骨造">軽量鉄骨造</option>
       </select>
     </label>
-    <label>延床面積（㎡）<input type="number" id="area"></label>
-    <label>足場面積（㎡）<input type="number" id="scaffold"></label>
-    <label>木くず（kg）<input type="number" id="woodWaste"></label>
-    <label>ボード類（kg）<input type="number" id="boardWaste"></label>
-    <label>廃プラ類（kg）<input type="number" id="plasticWaste"></label>
-    <label>ガラ（kg）<input type="number" id="rubbleWaste"></label>
-    <label>ガラス（kg）<input type="number" id="glassWaste"></label>
-    <label>陶器（kg）<input type="number" id="ceramicWaste"></label>
-    <button type="submit">保存</button>
+    <label>延床面積（㎡）：<input type="number" id="area" /></label>
+    <label>現場住所：<input type="text" id="address" /></label>
+    <label>足場面積（㎡）：<input type="number" id="scaffoldArea" /></label>
+    <label>木くず（kg）：<input type="number" id="woodWaste" /></label>
+    <label>ボード類（kg）：<input type="number" id="boardWaste" /></label>
+    <label>廃プラ類（kg）：<input type="number" id="plasticWaste" /></label>
+    <label>ガラ（kg）：<input type="number" id="rubbleWaste" /></label>
+    <label>ガラス（kg）：<input type="number" id="glassWaste" /></label>
+    <label>陶器（kg）：<input type="number" id="ceramicWaste" /></label>
+    <button type="submit">保存して内訳表示</button>
   </form>
 
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAN1cDb1yBdYBzEXQ2CD8anlih7YuPXggo",
-      authDomain: "mitas-estimate.firebaseapp.com",
-      projectId: "mitas-estimate",
-      storageBucket: "mitas-estimate.appspot.com",
-      messagingSenderId: "889863551826",
-      appId: "1:889863551826:web:71577461b5b9d810d4188b",
-      measurementId: "G-Y0H10QQQ16"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+  <script src="firebase.js"></script>
 
-    const id = new URLSearchParams(window.location.search).get("id");
+  <script>
+    const db = firebase.firestore();
+    const params = new URLSearchParams(location.search);
+    const docId = params.get("id");
+
     const form = document.getElementById("editForm");
 
-    if (id) {
-      db.collection("estimates").doc(id).get().then(doc => {
-        if (doc.exists) {
-          const data = doc.data();
-          for (const key in data) {
-            const el = document.getElementById(key);
-            if (el) el.value = data[key];
-          }
+    if (docId) {
+      db.collection("estimates").doc(docId).get().then(doc => {
+        const data = doc.data();
+        if (data) {
+          form.structure.value = data.structure;
+          form.area.value = data.area;
+          form.address.value = data.address;
+          form.scaffoldArea.value = data.scaffoldArea;
+          form.woodWaste.value = data.woodWaste;
+          form.boardWaste.value = data.boardWaste;
+          form.plasticWaste.value = data.plasticWaste;
+          form.rubbleWaste.value = data.rubbleWaste;
+          form.glassWaste.value = data.glassWaste;
+          form.ceramicWaste.value = data.ceramicWaste;
         }
       });
     }
 
-    form.addEventListener("submit", e => {
+    form.addEventListener("submit", (e) => {
       e.preventDefault();
-      const data = {
-        structure: document.getElementById("structure").value,
-        area: parseFloat(document.getElementById("area").value || 0),
-        scaffold: parseFloat(document.getElementById("scaffold").value || 0),
-        woodWaste: parseFloat(document.getElementById("woodWaste").value || 0),
-        boardWaste: parseFloat(document.getElementById("boardWaste").value || 0),
-        plasticWaste: parseFloat(document.getElementById("plasticWaste").value || 0),
-        rubbleWaste: parseFloat(document.getElementById("rubbleWaste").value || 0),
-        glassWaste: parseFloat(document.getElementById("glassWaste").value || 0),
-        ceramicWaste: parseFloat(document.getElementById("ceramicWaste").value || 0),
+      const newData = {
+        structure: form.structure.value,
+        area: form.area.value,
+        address: form.address.value,
+        scaffoldArea: form.scaffoldArea.value,
+        woodWaste: form.woodWaste.value,
+        boardWaste: form.boardWaste.value,
+        plasticWaste: form.plasticWaste.value,
+        rubbleWaste: form.rubbleWaste.value,
+        glassWaste: form.glassWaste.value,
+        ceramicWaste: form.ceramicWaste.value,
       };
-      db.collection("estimates").doc(id).set(data).then(() => {
-        alert("保存しました");
-        window.location.href = "list.html";
+
+      db.collection("estimates").doc(docId).update(newData).then(() => {
+        const params = new URLSearchParams({ id: docId, ...newData });
+        window.location.href = `uchiwake.html?${params.toString()}`;
+      }).catch(err => {
+        alert("更新に失敗しました：" + err);
       });
     });
   </script>
