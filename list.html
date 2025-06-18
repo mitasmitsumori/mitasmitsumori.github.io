@@ -1,55 +1,60 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>見積一覧 - MiTAS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: 'IPAexMincho', serif; margin: 20px; }
-    h1 { text-align: center; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #444; padding: 8px; font-size: 14px; }
-    th { background-color: #eee; }
-    button { padding: 6px 12px; font-size: 14px; }
+    body { font-family: 'IPAexMincho', serif; padding: 20px; }
+    h1 { font-size: 24px; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f4f4f4; }
   </style>
 </head>
 <body>
+
   <h1>見積一覧</h1>
   <table>
     <thead>
       <tr>
-        <th>お客様名</th>
-        <th>現場住所</th>
-        <th>建物構造</th>
-        <th>延床面積</th>
-        <th>操作</th>
+        <th>構造</th>
+        <th>面積</th>
+        <th>住所</th>
+        <th>作成日時</th>
       </tr>
     </thead>
-    <tbody id="listBody"></tbody>
+    <tbody id="estimateList">
+      <!-- データがここに入る -->
+    </tbody>
   </table>
 
-  <!-- Firebase -->
+  <!-- Firebase SDK 読み込み -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   <script src="firebase.js"></script>
 
+  <!-- データ取得スクリプト -->
   <script>
-    const tbody = document.getElementById("listBody");
+    const db = firebase.firestore();
+    const tbody = document.getElementById("estimateList");
 
-    db.collection("estimates").orderBy("createdAt", "desc").get().then(snapshot => {
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${data.customerName || ""}</td>
-          <td>${data.address || ""}</td>
-          <td>${data.structure || ""}</td>
-          <td>${data.area || ""}</td>
-          <td><a href="uchiwake.html?id=${doc.id}"><button>詳細を見る</button></a></td>
+    db.collection("estimates").orderBy("createdAt", "desc").get().then((querySnapshot) => {
+      querySnapshot.forEach((doc) => {
+        const d = doc.data();
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${d.structure || "-"}</td>
+          <td>${d.area || 0}㎡</td>
+          <td>${d.address || "-"}</td>
+          <td>${d.createdAt?.toDate().toLocaleString() || "-"}</td>
         `;
-        tbody.appendChild(row);
+        tbody.appendChild(tr);
       });
+    }).catch((err) => {
+      console.error("読み込みエラー:", err);
     });
   </script>
+
 </body>
 </html>
