@@ -37,55 +37,81 @@
   <button id="downloadBtn">PDFを出力する</button>
 
   <!-- 外部ライブラリ -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.72/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.72/vfs_fonts.js"></script>
 
-  <!-- 共通ファイル -->
-  <script src="firebase.js"></script>
+  <!-- フォント設定 -->
+  <script>
+    pdfMake.fonts = {
+      IPAexMincho: {
+        normal: 'ipaexm.ttf',
+        bold: 'ipaexm.ttf',
+        italics: 'ipaexm.ttf',
+        bolditalics: 'ipaexm.ttf'
+      }
+    };
+  </script>
+
+  <!-- 単価設定 -->
   <script src="settings.js"></script>
+  <!-- 自動計算 -->
   <script src="calc.js"></script>
 
   <script>
-    async function loadEstimateAndDisplay() {
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get("id");
-      if (!id) return alert("見積IDがありません");
+    const params = new URLSearchParams(window.location.search);
+    const data = {
+      structure: params.get("structure"),
+      area: parseFloat(params.get("area") || 0),
+      scaffold: parseFloat(params.get("scaffold") || 0),
+      woodWaste: parseFloat(params.get("woodWaste") || 0),
+      boardWaste: parseFloat(params.get("boardWaste") || 0),
+      plasticWaste: parseFloat(params.get("plasticWaste") || 0),
+      rubbleWaste: parseFloat(params.get("rubbleWaste") || 0),
+      glassWaste: parseFloat(params.get("glassWaste") || 0),
+      ceramicWaste: parseFloat(params.get("ceramicWaste") || 0)
+    };
 
-      const doc = await db.collection("estimates").doc(id).get();
-      if (!doc.exists) return alert("見積データが見つかりません");
+    const result = calculateEstimate(data, SETTINGS);
+    const table = document.getElementById("estimateBody");
+    let total = 0;
 
-      const data = doc.data();
-      const result = calculateEstimate(data, SETTINGS);
-
-      const table = document.getElementById("estimateBody");
-      let total = 0;
-
-      for (const [label, qty, unit, unitPrice, amount] of result.rows) {
-        const row = `<tr>
-          <td>${label}</td>
-          <td>${qty}</td>
-          <td>${unit}</td>
-          <td>${unitPrice.toLocaleString()}</td>
-          <td>${amount.toLocaleString()}</td>
-        </tr>`;
-        table.insertAdjacentHTML("beforeend", row);
-        total += amount;
-      }
-
-      document.getElementById("totalPrice").textContent = total.toLocaleString() + " 円";
-
-      document.getElementById("downloadBtn").addEventListener("click", () => {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.text("御見積内訳書", 80, 15);
-        doc.autoTable({ html: '#estimateTable', startY: 25 });
-        doc.save("見積書.pdf");
-      });
+    for (const [label, qty, unit, unitPrice, amount] of result.rows) {
+      const row = `<tr>
+        <td>${label}</td>
+        <td>${qty}</td>
+        <td>${unit}</td>
+        <td>${unitPrice.toLocaleString()}</td>
+        <td>${amount.toLocaleString()}</td>
+      </tr>`;
+      table.insertAdjacentHTML("beforeend", row);
+      total += amount;
     }
 
-    loadEstimateAndDisplay();
+    document.getElementById("totalPrice").textContent = total.toLocaleString() + " 円";
+
+    document.getElementById("downloadBtn").addEventListener("click", () => {
+      const docDefinition = {
+        content: [
+          { text: '御見積内訳書', style: 'header', alignment: 'center' },
+          {
+            table: {
+              headerRows: 1,
+              widths: ['*', 'auto', 'auto', 'auto', 'auto'],
+              body: [
+                ['項目', '数量', '単位', '単価', '金額'],
+                ...result.rows.map(r => [r[0], r[1], r[2], r[3].toLocaleString(), r[4].toLocaleString()]),
+                [{ text: '合計', colSpan: 4, alignment: 'right' }, {}, {}, {}, total.toLocaleString()]
+              ]
+            }
+          }
+        ],
+        defaultStyle: { font: 'IPAexMincho' },
+        styles: {
+          header: { fontSize: 18, bold: true, margin: [0, 0, 0, 10] }
+        }
+      };
+      pdfMake.createPdf(docDefinition).download('見積内訳書.pdf');
+    });
   </script>
 </body>
 </html>
