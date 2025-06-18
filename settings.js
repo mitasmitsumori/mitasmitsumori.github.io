@@ -1,36 +1,31 @@
-// 単価設定（変更可能）
 const SETTINGS = {
-  structureUnitPrices: {
+  demolitionUnitPrices: {
     "木造": 33000,
     "RC造": 50000,
     "S造": 33000,
     "軽量鉄骨造": 33000
   },
-  scaffoldUnitPrice: 600, // 円/㎡
-  asbestosSurveyFee: 90000, // 固定費
-
+  scaffoldUnitPrice: 600, // 円／㎡
+  surveyFee: 90000, // アスベスト調査費（固定）
   machineTransportFee: {
-    "10km以内": 14000,
-    "10km以上": 18000,
-    "50〜60km": 35000
+    under10km: 14000,
+    over10km: 18000,
+    over50km: 35000
   },
-
-  disposalUnitPrices: {
-    "木くず": 16,       // 円/kg
+  wasteUnitPrices: {
+    "木くず": 16,
     "ボード類": 35,
     "廃プラ類": 50,
     "ガラ": 2,
     "ガラス": 10,
     "陶器": 20
   },
-
-  recyclePurchasePrices: {
-    "鉄": 25,    // 円/kg
+  recyclableUnitPrices: {
+    "鉄": 25,
     "アルミ": 100
   },
-
-  transportVolumePrices: {
-    "木くず": 2000,    // 円/㎥
+  transportFeesPerCubicMeter: {
+    "木くず": 2000,
     "コンクリート": 1000,
     "廃プラ": 2000,
     "ガラス・陶器": 2000,
