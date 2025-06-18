@@ -1,18 +1,138 @@
-function calculateEstimate(data, settings) {
-  const prices = settings.unitPrices;
-  const rows = [];
-  const pushRow = (label, qty, unit, unitKey) => {
-    const unitPrice = prices[unitKey] || 0;
-    const amount = Math.round(qty * unitPrice);
-    rows.push([label, qty, unit, unitPrice, amount]);
-  };
-  pushRow("解体工事費", data.area, "㎡", data.structure);
-  pushRow("足場工事費", data.scaffold, "㎡", "足場");
-  pushRow("木くず（処分費）", data.woodWaste, "kg", "木くず");
-  pushRow("ボード類", data.boardWaste, "kg", "ボード類");
-  pushRow("廃プラ類", data.plasticWaste, "kg", "廃プラ類");
-  pushRow("ガラ", data.rubbleWaste, "kg", "ガラ");
-  pushRow("ガラス", data.glassWaste, "kg", "ガラス");
-  pushRow("陶器", data.ceramicWaste, "kg", "陶器");
-  return { rows };
-}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MiTAS 見積作成フォーム</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f8f8;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      background: #2c3e50;
+      color: white;
+      padding: 10px;
+      margin: -20px -20px 20px -20px;
+      text-align: center;
+    }
+    form {
+      background: white;
+      padding: 20px;
+      border: 1px solid #ddd;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      margin-bottom: 12px;
+      border: 1px solid #dcdcdc;
+    }
+    button {
+      background: #2c3e50;
+      color: white;
+      padding: 10px;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <h1>MiTAS 見積作成</h1>
+  <form id="estimateForm">
+    <label>建物構造：
+      <select id="structure">
+        <option value="木造">木造</option>
+        <option value="RC造">RC造</option>
+        <option value="S造">S造</option>
+        <option value="軽量鉄骨造">軽量鉄骨造</option>
+      </select>
+    </label>
+
+    <label>延床面積（㎡）：
+      <input type="number" id="area" required />
+    </label>
+
+    <label>現場住所：
+      <input type="text" id="address" required />
+    </label>
+
+    <label>足場面積（㎡）：
+      <input type="number" id="scaffoldArea" />
+    </label>
+
+    <label>残置物の有無：
+      <input type="radio" name="leftovers" value="あり">あり
+      <input type="radio" name="leftovers" value="なし">なし
+    </label>
+
+    <label>付帯工事の有無：
+      <input type="radio" name="additional" value="あり">あり
+      <input type="radio" name="additional" value="なし">なし
+    </label>
+
+    <label>木くず（kg）：<input type="number" id="woodWaste" /></label>
+    <label>ボード類（kg）：<input type="number" id="boardWaste" /></label>
+    <label>廃プラ類（kg）：<input type="number" id="plasticWaste" /></label>
+    <label>ガラ（kg）：<input type="number" id="rubbleWaste" /></label>
+    <label>ガラス（kg）：<input type="number" id="glassWaste" /></label>
+    <label>陶器（kg）：<input type="number" id="ceramicWaste" /></label>
+
+    <button type="submit">見積作成</button>
+  </form>
+
+  <!-- Firebase SDKの読み込み -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="firebase.js"></script>
+
+  <script>
+    const db = firebase.firestore();
+
+    document.getElementById("estimateForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const structure = document.getElementById("structure").value;
+      const area = document.getElementById("area").value;
+      const address = document.getElementById("address").value;
+      const scaffoldArea = document.getElementById("scaffoldArea").value;
+      const leftovers = document.querySelector('input[name="leftovers"]:checked')?.value || "";
+      const additional = document.querySelector('input[name="additional"]:checked')?.value || "";
+
+      const data = {
+        structure,
+        area,
+        address,
+        scaffoldArea,
+        hasLeftovers: leftovers,
+        hasAdditionalWork: additional,
+        woodWaste: document.getElementById("woodWaste").value,
+        boardWaste: document.getElementById("boardWaste").value,
+        plasticWaste: document.getElementById("plasticWaste").value,
+        rubbleWaste: document.getElementById("rubbleWaste").value,
+        glassWaste: document.getElementById("glassWaste").value,
+        ceramicWaste: document.getElementById("ceramicWaste").value,
+        createdAt: new Date()
+      };
+
+      db.collection("estimates").add(data).then(docRef => {
+        const params = new URLSearchParams({
+          id: docRef.id,
+          ...data
+        });
+        window.location.href = `uchiwake.html?${params.toString()}`;
+      }).catch(err => {
+        alert("保存に失敗しました: " + err);
+      });
+    });
+  </script>
+</body>
+</html>
