@@ -2,32 +2,29 @@ function calculateEstimate(data, settings) {
   const rows = [];
   let total = 0;
 
-  function add(label, qty, unit, unitPrice) {
+  const demolitionUnitPrice = settings.demolitionUnitPrices[data.structure] || 0;
+  const demolitionAmount = Math.round(data.area * demolitionUnitPrice);
+  rows.push(["解体工事費", data.area, "㎡", demolitionUnitPrice, demolitionAmount]);
+  total += demolitionAmount;
+
+  const scaffoldAmount = Math.round(data.scaffold * settings.scaffoldUnitPrice);
+  rows.push(["足場工事費", data.scaffold, "㎡", settings.scaffoldUnitPrice, scaffoldAmount]);
+  total += scaffoldAmount;
+
+  const wasteItems = [
+    ["木くず", data.woodWaste, "kg", settings.wasteDisposalUnitPrices["木くず"]],
+    ["ボード類", data.boardWaste, "kg", settings.wasteDisposalUnitPrices["ボード類"]],
+    ["廃プラ類", data.plasticWaste, "kg", settings.wasteDisposalUnitPrices["廃プラ類"]],
+    ["ガラ", data.rubbleWaste, "kg", settings.wasteDisposalUnitPrices["ガラ"]],
+    ["ガラス", data.glassWaste, "kg", settings.wasteDisposalUnitPrices["ガラス"]],
+    ["陶器", data.ceramicWaste, "kg", settings.wasteDisposalUnitPrices["陶器"]]
+  ];
+
+  for (const [label, qty, unit, unitPrice] of wasteItems) {
     const amount = Math.round(qty * unitPrice);
+    rows.push([`${label}（処分費）`, qty, unit, unitPrice, amount]);
     total += amount;
-    rows.push([label, qty, unit, unitPrice, amount]);
   }
 
-  // 解体工事費
-  const unitPrice = settings.demolitionUnitPrices[data.structure] || 0;
-  add("解体工事費", data.area, "㎡", unitPrice);
-
-  // 足場工事費
-  add("足場工事費", data.scaffold, "㎡", settings.scaffoldUnitPrice);
-
-  // 重機回送費（仮で距離10km以上を想定）
-  add("重機回送費", 1, "式", settings.heavyMachineryTransportFee["10km以上"]);
-
-  // アスベスト調査費
-  add("アスベスト調査費", 1, "式", settings.asbestosSurveyFee);
-
-  // 産廃処分費
-  add("木くず（処分費）", data.woodWaste, "kg", settings.wasteDisposalUnitPrices["木くず"]);
-  add("ボード類", data.boardWaste, "kg", settings.wasteDisposalUnitPrices["ボード類"]);
-  add("廃プラ類", data.plasticWaste, "kg", settings.wasteDisposalUnitPrices["廃プラ類"]);
-  add("ガラ", data.rubbleWaste, "kg", settings.wasteDisposalUnitPrices["ガラ"]);
-  add("ガラス", data.glassWaste, "kg", settings.wasteDisposalUnitPrices["ガラス"]);
-  add("陶器", data.ceramicWaste, "kg", settings.wasteDisposalUnitPrices["陶器"]);
-
-  return { total, rows };
+  return { rows, total };
 }
