@@ -36,47 +36,16 @@
   </table>
   <button id="downloadBtn">PDFを出力する</button>
 
-  <!-- ライブラリ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-
-  <!-- 単価設定 -->
   <script src="settings.js"></script>
+  <script src="calc.js"></script>
   <script>
-    function calculateEstimate(data, settings) {
-      const rows = [];
-      let total = 0;
-
-      function add(label, qty, unit, unitPrice) {
-        const amount = Math.round(qty * unitPrice);
-        rows.push([label, qty, unit, unitPrice, amount]);
-        total += amount;
-      }
-
-      const s = settings.unitPrices;
-      add("解体工事費", data.area, "㎡", s[data.structure] || 0);
-      add("足場工事費", data.scaffold, "㎡", s["足場"]);
-      add("木くず（処分費）", data.woodWaste, "kg", s["木くず"]);
-      add("ボード類", data.boardWaste, "kg", s["ボード類"]);
-      add("廃プラ類", data.plasticWaste, "kg", s["廃プラ類"]);
-      add("ガラ", data.rubbleWaste, "kg", s["ガラ"]);
-      add("ガラス", data.glassWaste, "kg", s["ガラス"]);
-      add("陶器", data.ceramicWaste, "kg", s["陶器"]);
-
-      return { rows, total };
-    }
-
     const params = new URLSearchParams(window.location.search);
     const data = {
       structure: params.get("structure"),
       area: parseFloat(params.get("area") || 0),
-      scaffold: parseFloat(params.get("scaffold") || 0),
-      woodWaste: parseFloat(params.get("woodWaste") || 0),
-      boardWaste: parseFloat(params.get("boardWaste") || 0),
-      plasticWaste: parseFloat(params.get("plasticWaste") || 0),
-      rubbleWaste: parseFloat(params.get("rubbleWaste") || 0),
-      glassWaste: parseFloat(params.get("glassWaste") || 0),
-      ceramicWaste: parseFloat(params.get("ceramicWaste") || 0)
+      scaffold: parseFloat(params.get("scaffold") || 0)
     };
 
     const result = calculateEstimate(data, SETTINGS);
