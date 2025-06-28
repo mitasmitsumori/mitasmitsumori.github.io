@@ -2,48 +2,64 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>御見積内訳書 - MiTAS</title>
+  <title>御見積書 - MiTAS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
-    body { font-family: 'IPAexMincho', sans-serif; margin: 10px; }
-    h1 { text-align: center; font-size: 20px; margin-bottom: 10px; }
-    .editable { border: 1px solid #ccc; padding: 5px; min-height: 20px; margin-bottom: 8px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { border: 1px solid #333; padding: 5px; font-size: 12px; }
+    body { font-family: 'IPAexMincho', sans-serif; margin: 40px; color: #001f3f; }
+    h1 { text-align: center; font-size: 36px; margin-bottom: 40px; }
+    .section { margin-bottom: 60px; }
+    .cover p { font-size: 16px; line-height: 1.8; margin: 8px 0; }
+    .price { font-size: 32px; text-align: center; margin: 40px 0; font-weight: bold; }
+    .footer { text-align: center; font-size: 14px; margin-top: 60px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #333; padding: 8px; font-size: 14px; }
     th { background: #2980b9; color: #fff; }
     .total { font-weight: bold; background: #2980b9; color: #fff; text-align: right; }
-    #downloadBtn { margin-top: 15px; padding: 8px 15px; font-size: 14px; width: 100%; }
+    #downloadBtn { margin-top: 30px; padding: 10px 20px; font-size: 16px; }
   </style>
 </head>
 <body>
-  <h1 contenteditable="true" class="editable">御見積内訳書</h1>
-
-  <div>
-    <div class="editable" contenteditable="true" id="customerName">お客様名をここに入力</div>
-    <div class="editable" contenteditable="true" id="projectName">工事名をここに入力</div>
-    <div class="editable" contenteditable="true" id="address">住所をここに入力</div>
+  <!-- 表紙部分 -->
+  <div class="section cover">
+    <h1>御見積書</h1>
+    <p>（株）お客様名 御中</p>
+    <p>工事名：〇〇解体工事</p>
+    <p>工事場所：〇〇市〇〇町</p>
+    <p>工事期間：〇〇月〇〇日 ～ 〇〇月〇〇日</p>
+    <p>支払条件：末締め翌月末支払い</p>
+    <p>見積有効期限：〇〇月〇〇日まで</p>
+    <p>鋼票：なし</p>
+    <div class="price">¥1,600,000-</div>
+    <p style="text-align: center;">見積金額には消費税（10%）が含まれています。</p>
+    <div class="footer">
+      Powered by MiTAS<br>
+      株式会社丸解 鹿児島市五ヶ別府町3334 TEL:099-297-4442 FAX:099-297-4443
+    </div>
   </div>
 
-  <table id="estimateTable">
-    <thead>
-      <tr>
-        <th>項目</th>
-        <th>数量</th>
-        <th>単位</th>
-        <th>単価</th>
-        <th>金額</th>
-      </tr>
-    </thead>
-    <tbody id="estimateBody"></tbody>
-    <tfoot>
-      <tr class="total">
-        <td colspan="4">合計</td>
-        <td id="totalPrice">-</td>
-      </tr>
-    </tfoot>
-  </table>
-
-  <button id="downloadBtn">PDFを出力する</button>
+  <!-- 内訳部分 -->
+  <div class="section estimate">
+    <h1>御見積内訳書</h1>
+    <table id="estimateTable">
+      <thead>
+        <tr>
+          <th>項目</th>
+          <th>数量</th>
+          <th>単位</th>
+          <th>単価</th>
+          <th>金額</th>
+        </tr>
+      </thead>
+      <tbody id="estimateBody"></tbody>
+      <tfoot>
+        <tr class="total">
+          <td colspan="4">合計</td>
+          <td id="totalPrice">-</td>
+        </tr>
+      </tfoot>
+    </table>
+    <button id="downloadBtn">PDFを出力する</button>
+  </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -51,7 +67,7 @@
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const params = new URLSearchParams(window.location.search);
-      const structure = params.get("structure");
+      const structure = params.get("structure") || "木造";
       const area = parseFloat(params.get("area") || 0);
       const scaffold = parseFloat(params.get("scaffold") || 0);
 
@@ -86,11 +102,11 @@
       document.getElementById("downloadBtn").addEventListener("click", () => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        doc.text(document.getElementById("customerName").innerText, 14, 20);
-        doc.text(document.getElementById("projectName").innerText, 14, 28);
-        doc.text(document.getElementById("address").innerText, 14, 36);
-        doc.autoTable({ html: '#estimateTable', startY: 45 });
-        doc.save("見積書.pdf");
+        doc.html(document.body, {
+          callback: () => doc.save("見積書.pdf"),
+          x: 10,
+          y: 10
+        });
       });
     });
   </script>
