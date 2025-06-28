@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>御見積内訳書 - MiTAS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
-    body { font-family: 'IPAexMincho', serif; margin: 20px; }
+    body { font-family: sans-serif; margin: 20px; }
     h1 { text-align: center; font-size: 24px; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { border: 1px solid #333; padding: 8px; font-size: 14px; }
@@ -26,62 +26,60 @@
         <th>金額</th>
       </tr>
     </thead>
-    <tbody id="estimateBody">
-      <tr>
-        <td>解体工事費</td>
-        <td>200</td>
-        <td>㎡</td>
-        <td>10,000</td>
-        <td>2,000,000</td>
-      </tr>
-      <tr>
-        <td>足場工事費</td>
-        <td>200</td>
-        <td>㎡</td>
-        <td>600</td>
-        <td>120,000</td>
-      </tr>
-      <tr>
-        <td>木くず（処分費）</td>
-        <td>4,320</td>
-        <td>kg</td>
-        <td>16</td>
-        <td>69,120</td>
-      </tr>
+    <tbody id="estimateBody"></tbody>
+    <tfoot>
       <tr class="total">
         <td colspan="4">合計</td>
-        <td>2,189,120</td>
+        <td id="totalPrice">-</td>
       </tr>
-    </tbody>
+    </tfoot>
   </table>
   <button id="downloadBtn">PDFを出力する</button>
 
-  <!-- 必要なライブラリ -->
+  <!-- jsPDFライブラリ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://unpkg.com/jspdf-font-ipaex/dist/ipaexg.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
   <script>
-    const { jsPDF } = window.jspdf;
-    jsPDF.API.events.push(['addFonts', function() {
-      this.addFileToVFS('ipaexg.ttf', IPAexG);
-      this.addFont('ipaexg.ttf', 'IPAexG', 'normal');
-    }]);
+    const params = new URLSearchParams(window.location.search);
+    const structure = params.get("structure");
+    const area = parseFloat(params.get("area") || 0);
+    const scaffold = parseFloat(params.get("scaffold") || 0);
+
+    const unitPrices = {
+      "木造": 33000,
+      "RC造": 50000,
+      "S造": 33000,
+      "軽量鉄骨造": 33000,
+      "足場": 600
+    };
+
+    const table = document.getElementById("estimateBody");
+    let total = 0;
+
+    function addRow(label, qty, unit, unitPrice) {
+      const price = Math.round(qty * unitPrice);
+      total += price;
+      const row = `<tr>
+        <td>${label}</td>
+        <td>${qty}</td>
+        <td>${unit}</td>
+        <td>${unitPrice.toLocaleString()}</td>
+        <td>${price.toLocaleString()}</td>
+      </tr>`;
+      table.insertAdjacentHTML("beforeend", row);
+    }
+
+    if (structure && area) addRow("解体工事費", area, "㎡", unitPrices[structure] || 0);
+    if (scaffold) addRow("足場工事費", scaffold, "㎡", unitPrices["足場"]);
+
+    document.getElementById("totalPrice").textContent = total.toLocaleString() + " 円";
 
     document.getElementById("downloadBtn").addEventListener("click", () => {
+      const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-      doc.setFont('IPAexG');
-      doc.setFontSize(14);
-      doc.text("御見積内訳書", 15, 20);
-
-      doc.autoTable({
-        html: '#estimateTable',
-        startY: 30,
-        styles: {
-          font: 'IPAexG',
-          fontSize: 10,
-        }
-      });
-
+      doc.text("御見積内訳書", 80, 15);
+      doc.autoTable({ html: '#estimateTable', startY: 25 });
       doc.save("見積書.pdf");
     });
   </script>
