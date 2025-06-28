@@ -1,53 +1,77 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>御見積内訳書 - MiTAS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body { font-family: 'IPAexMincho', sans-serif; margin: 20px; }
+    h1 { text-align: center; font-size: 24px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #333; padding: 8px; font-size: 14px; }
+    th { background: #2980b9; color: #fff; }
+    .total { font-weight: bold; background: #2980b9; color: #fff; text-align: right; }
+    #downloadBtn { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h1>御見積内訳書</h1>
+  <table id="estimateTable">
+    <thead>
+      <tr>
+        <th>項目</th>
+        <th>数量</th>
+        <th>単位</th>
+        <th>単価</th>
+        <th>金額</th>
+      </tr>
+    </thead>
+    <tbody id="estimateBody"></tbody>
+    <tfoot>
+      <tr class="total">
+        <td colspan="4">合計</td>
+        <td id="totalPrice">-</td>
+      </tr>
+    </tfoot>
+  </table>
+  <button id="downloadBtn">PDFを出力する</button>
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const params = new URLSearchParams(window.location.search);
-    const structure = params.get("structure");
-    const area = parseFloat(params.get("area") || 0);
-    const scaffold = parseFloat(params.get("scaffold") || 0);
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const rows = [
+        ["解体工事費", 100, "㎡", 33000, 3300000],
+        ["足場工事費", 100, "㎡", 600, 60000]
+      ];
 
-    const unitPrices = {
-      "木造": 33000,
-      "RC造": 50000,
-      "S造": 33000,
-      "軽量鉄骨造": 33000,
-      "足場": 600
-    };
+      let total = 0;
+      const tbody = document.getElementById("estimateBody");
+      rows.forEach(([label, qty, unit, price, amount]) => {
+        total += amount;
+        const row = `<tr>
+          <td>${label}</td>
+          <td>${qty}</td>
+          <td>${unit}</td>
+          <td>${price.toLocaleString()}</td>
+          <td>${amount.toLocaleString()}</td>
+        </tr>`;
+        tbody.insertAdjacentHTML("beforeend", row);
+      });
+      document.getElementById("totalPrice").textContent = total.toLocaleString() + " 円";
 
-    const rows = [
-      ["解体工事費", area, "㎡", unitPrices[structure] || 0, area * (unitPrices[structure] || 0)],
-      ["足場工事費", scaffold, "㎡", unitPrices["足場"], scaffold * unitPrices["足場"]]
-    ];
-
-    let total = 0;
-    const tbody = document.getElementById("estimateBody");
-    rows.forEach(([label, qty, unit, price, amount]) => {
-      total += amount;
-      const row = `<tr>
-        <td>${label}</td>
-        <td>${qty}</td>
-        <td>${unit}</td>
-        <td>${price.toLocaleString()}</td>
-        <td>${amount.toLocaleString()}</td>
-      </tr>`;
-      tbody.insertAdjacentHTML("beforeend", row);
+      document.getElementById("downloadBtn").addEventListener("click", () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        // テスト用ダミーBase64（実際にはここに本物を入れる必要あり）
+        doc.addFileToVFS("ipaexm.ttf", "AAEAAAARAQAABAAQ");
+        doc.addFont("ipaexm.ttf", "IPAexMincho", "normal");
+        doc.setFont("IPAexMincho");
+        doc.text("御見積内訳書", 80, 15);
+        doc.autoTable({ html: '#estimateTable', startY: 25 });
+        doc.save("見積書.pdf");
+      });
     });
-    document.getElementById("totalPrice").textContent = total.toLocaleString() + " 円";
-
-    document.getElementById("downloadBtn").addEventListener("click", () => {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-
-      // IPAフォントをBase64で埋め込む部分（簡易例）
-      doc.addFileToVFS("ipaexm.ttf", "");
-      doc.addFont("ipaexm.ttf", "IPAexMincho", "normal");
-      doc.setFont("IPAexMincho");
-
-      doc.text("御見積内訳書", 80, 15);
-      doc.autoTable({ html: '#estimateTable', startY: 25 });
-      doc.save("見積書.pdf");
-    });
-  });
-</script>
+  </script>
+</body>
+</html>
