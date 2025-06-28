@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>御見積内訳書 - MiTAS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
-    body { font-family: 'IPAexMincho', sans-serif; margin: 20px; }
+    @font-face {
+      font-family: 'IPAexMincho';
+      src: url('./fonts/ipaexm.ttf') format('truetype');
+    }
+    body { font-family: 'IPAexMincho', serif; margin: 20px; }
     h1 { text-align: center; font-size: 24px; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { border: 1px solid #333; padding: 8px; font-size: 14px; }
@@ -76,10 +80,10 @@
 
       document.getElementById("downloadBtn").addEventListener("click", () => {
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({
-          unit: "mm",
-          format: "a4"
-        });
+        const doc = new jsPDF();
+        doc.addFileToVFS("IPAexMincho.ttf", ""); // フォントバイナリをBase64で入れる必要があるが、ここは後で対応可
+        doc.addFont("IPAexMincho.ttf", "IPAexMincho", "normal");
+        doc.setFont("IPAexMincho");
         doc.text("御見積内訳書", 80, 15);
         doc.autoTable({ html: '#estimateTable', startY: 25 });
         doc.save("見積書.pdf");
