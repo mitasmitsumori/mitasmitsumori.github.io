@@ -3,52 +3,70 @@
 <head>
   <meta charset="UTF-8" />
   <title>MiTAS 見積作成</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    h1 { font-size: 24px; margin-bottom: 20px; }
-    label { display: block; margin-top: 10px; }
-    input[type="text"], input[type="number"] { width: 100%; padding: 8px; }
-    button { margin-top: 20px; padding: 10px 20px; }
+    body { font-family: sans-serif; margin: 20px; }
+    label { display: block; margin: 10px 0 5px; font-weight: bold; }
+    input, select { width: 100%; padding: 8px; box-sizing: border-box; }
+    button { margin-top: 20px; padding: 12px; font-size: 16px; background: #2980b9; color: white; border: none; border-radius: 4px; }
   </style>
 </head>
 <body>
   <h1>MiTAS 見積作成</h1>
-  <form id="estimateForm">
-    <label>建物構造：
-      <select id="structure">
-        <option value="木造">木造</option>
-        <option value="RC造">RC造</option>
-        <option value="S造">S造</option>
-        <option value="軽量鉄骨造">軽量鉄骨造</option>
-      </select>
-    </label>
-    <label>延床面積（㎡）：<input type="number" id="area" required></label>
-    <label>現場住所：<input type="text" id="address" required></label>
-    <label>足場面積（㎡）：<input type="number" id="scaffoldArea" required></label>
-    <label>残置物の有無：
-      <label><input type="radio" name="leftovers" value="あり"> あり</label>
-      <label><input type="radio" name="leftovers" value="なし"> なし</label>
-    </label>
-    <label>付帯工事の有無：
-      <label><input type="radio" name="additional" value="あり"> あり</label>
-      <label><input type="radio" name="additional" value="なし"> なし</label>
-    </label>
-    <button type="submit">見積作成</button>
-  </form>
+
+  <label>お客様名：</label>
+  <input type="text" id="customerName" placeholder="例：㈱九州プラット 様">
+
+  <label>工事名：</label>
+  <input type="text" id="projectName" placeholder="例：◯◯解体工事">
+
+  <label>工事場所：</label>
+  <input type="text" id="projectLocation" placeholder="例：鹿児島市××町123-4">
+
+  <label>工事期間：</label>
+  <input type="text" id="projectPeriod" placeholder="例：2025年7月1日〜8月31日">
+
+  <label>支払条件：</label>
+  <input type="text" id="paymentTerms" placeholder="例：完成後30日以内">
+
+  <label>見積有効期限：</label>
+  <input type="text" id="estimateValidity" placeholder="例：2025年8月31日まで">
+
+  <label>摘要（備考）：</label>
+  <input type="text" id="remarks" placeholder="例：特記事項なし">
+
+  <label>建物構造：</label>
+  <select id="structure">
+    <option value="木造">木造</option>
+    <option value="RC造">RC造</option>
+    <option value="S造">S造</option>
+    <option value="軽量鉄骨造">軽量鉄骨造</option>
+  </select>
+
+  <label>延床面積（㎡）：</label>
+  <input type="number" id="area" placeholder="例：100">
+
+  <label>足場面積（㎡）：</label>
+  <input type="number" id="scaffold" placeholder="例：200">
+
+  <button onclick="createEstimate()">見積作成</button>
 
   <script>
-    document.getElementById("estimateForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const params = new URLSearchParams();
-      params.append("structure", document.getElementById("structure").value);
-      params.append("area", document.getElementById("area").value);
-      params.append("address", document.getElementById("address").value);
-      params.append("scaffold", document.getElementById("scaffoldArea").value);
-      params.append("leftovers", document.querySelector('input[name="leftovers"]:checked')?.value || '');
-      params.append("additional", document.querySelector('input[name="additional"]:checked')?.value || '');
-      location.href = "uchiwake.html?" + params.toString();
-    });
+    function createEstimate() {
+      const params = new URLSearchParams({
+        customerName: document.getElementById("customerName").value,
+        projectName: document.getElementById("projectName").value,
+        projectLocation: document.getElementById("projectLocation").value,
+        projectPeriod: document.getElementById("projectPeriod").value,
+        paymentTerms: document.getElementById("paymentTerms").value,
+        estimateValidity: document.getElementById("estimateValidity").value,
+        remarks: document.getElementById("remarks").value,
+        structure: document.getElementById("structure").value,
+        area: document.getElementById("area").value,
+        scaffold: document.getElementById("scaffold").value
+      });
+      window.location.href = `uchiwake.html?${params.toString()}`;
+    }
   </script>
 </body>
 </html>
