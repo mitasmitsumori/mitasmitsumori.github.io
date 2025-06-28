@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>御見積内訳書 - MiTAS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
@@ -78,15 +78,11 @@
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF({
           font: "IPAexMincho",
-          fontStyle: "normal",
           unit: "mm",
           format: "a4"
         });
-        doc.addFileToVFS("IPAexMincho.ttf", "<BASE64文字列をここに貼る>");
-        doc.addFont("IPAexMincho.ttf", "IPAexMincho", "normal");
-        doc.setFont("IPAexMincho");
-        doc.text("御見積内訳書", 15, 15);
-        doc.autoTable({ html: '#estimateTable', startY: 25, styles: { font: "IPAexMincho" } });
+        doc.text("御見積内訳書", 80, 15);
+        doc.autoTable({ html: '#estimateTable', startY: 25 });
         doc.save("見積書.pdf");
       });
     });
