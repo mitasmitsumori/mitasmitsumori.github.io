@@ -26,51 +26,62 @@
         <th>金額</th>
       </tr>
     </thead>
-    <tbody id="estimateBody"></tbody>
-    <tfoot>
+    <tbody id="estimateBody">
+      <tr>
+        <td>解体工事費</td>
+        <td>200</td>
+        <td>㎡</td>
+        <td>10,000</td>
+        <td>2,000,000</td>
+      </tr>
+      <tr>
+        <td>足場工事費</td>
+        <td>200</td>
+        <td>㎡</td>
+        <td>600</td>
+        <td>120,000</td>
+      </tr>
+      <tr>
+        <td>木くず（処分費）</td>
+        <td>4,320</td>
+        <td>kg</td>
+        <td>16</td>
+        <td>69,120</td>
+      </tr>
       <tr class="total">
         <td colspan="4">合計</td>
-        <td id="totalPrice">-</td>
+        <td>2,189,120</td>
       </tr>
-    </tfoot>
+    </tbody>
   </table>
   <button id="downloadBtn">PDFを出力する</button>
 
+  <!-- 必要なライブラリ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-  <script src="settings.js"></script>
-  <script src="calc.js"></script>
+  <script src="https://unpkg.com/jspdf-font-ipaex/dist/ipaexg.min.js"></script>
+
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const data = {
-      structure: params.get("structure"),
-      area: parseFloat(params.get("area") || 0),
-      scaffold: parseFloat(params.get("scaffold") || 0)
-    };
-
-    const result = calculateEstimate(data, SETTINGS);
-    const table = document.getElementById("estimateBody");
-    let total = 0;
-
-    for (const [label, qty, unit, unitPrice, amount] of result.rows) {
-      const row = `<tr>
-        <td>${label}</td>
-        <td>${qty}</td>
-        <td>${unit}</td>
-        <td>${unitPrice.toLocaleString()}</td>
-        <td>${amount.toLocaleString()}</td>
-      </tr>`;
-      table.insertAdjacentHTML("beforeend", row);
-      total += amount;
-    }
-
-    document.getElementById("totalPrice").textContent = total.toLocaleString() + " 円";
+    const { jsPDF } = window.jspdf;
+    jsPDF.API.events.push(['addFonts', function() {
+      this.addFileToVFS('ipaexg.ttf', IPAexG);
+      this.addFont('ipaexg.ttf', 'IPAexG', 'normal');
+    }]);
 
     document.getElementById("downloadBtn").addEventListener("click", () => {
-      const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-      doc.text("御見積内訳書", 80, 15);
-      doc.autoTable({ html: '#estimateTable', startY: 25 });
+      doc.setFont('IPAexG');
+      doc.setFontSize(14);
+      doc.text("御見積内訳書", 15, 20);
+
+      doc.autoTable({
+        html: '#estimateTable',
+        startY: 30,
+        styles: {
+          font: 'IPAexG',
+          fontSize: 10,
+        }
+      });
+
       doc.save("見積書.pdf");
     });
   </script>
