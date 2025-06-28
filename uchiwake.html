@@ -38,11 +38,25 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      const params = new URLSearchParams(window.location.search);
+      const structure = params.get("structure");
+      const area = parseFloat(params.get("area") || 0);
+      const scaffold = parseFloat(params.get("scaffold") || 0);
+
+      const unitPrices = {
+        "木造": 33000,
+        "RC造": 50000,
+        "S造": 33000,
+        "軽量鉄骨造": 33000,
+        "足場": 600
+      };
+
       const rows = [
-        ["解体工事費", 100, "㎡", 33000, 3300000],
-        ["足場工事費", 100, "㎡", 600, 60000]
+        ["解体工事費", area, "㎡", unitPrices[structure] || 0, area * (unitPrices[structure] || 0)],
+        ["足場工事費", scaffold, "㎡", unitPrices["足場"], scaffold * unitPrices["足場"]]
       ];
 
       let total = 0;
@@ -62,13 +76,17 @@
 
       document.getElementById("downloadBtn").addEventListener("click", () => {
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        // テスト用ダミーBase64（実際にはここに本物を入れる必要あり）
-        doc.addFileToVFS("ipaexm.ttf", "AAEAAAARAQAABAAQ");
-        doc.addFont("ipaexm.ttf", "IPAexMincho", "normal");
+        const doc = new jsPDF({
+          font: "IPAexMincho",
+          fontStyle: "normal",
+          unit: "mm",
+          format: "a4"
+        });
+        doc.addFileToVFS("IPAexMincho.ttf", "<BASE64文字列をここに貼る>");
+        doc.addFont("IPAexMincho.ttf", "IPAexMincho", "normal");
         doc.setFont("IPAexMincho");
-        doc.text("御見積内訳書", 80, 15);
-        doc.autoTable({ html: '#estimateTable', startY: 25 });
+        doc.text("御見積内訳書", 15, 15);
+        doc.autoTable({ html: '#estimateTable', startY: 25, styles: { font: "IPAexMincho" } });
         doc.save("見積書.pdf");
       });
     });
