@@ -5,21 +5,25 @@
   <title>御見積内訳書 - MiTAS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
-    @font-face {
-      font-family: 'IPAexMincho';
-      src: url('./fonts/ipaexm.ttf') format('truetype');
-    }
-    body { font-family: 'IPAexMincho', serif; margin: 20px; }
-    h1 { text-align: center; font-size: 24px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #333; padding: 8px; font-size: 14px; }
+    body { font-family: 'IPAexMincho', sans-serif; margin: 10px; }
+    h1 { text-align: center; font-size: 20px; margin-bottom: 10px; }
+    .editable { border: 1px solid #ccc; padding: 5px; min-height: 20px; margin-bottom: 8px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #333; padding: 5px; font-size: 12px; }
     th { background: #2980b9; color: #fff; }
     .total { font-weight: bold; background: #2980b9; color: #fff; text-align: right; }
-    #downloadBtn { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
+    #downloadBtn { margin-top: 15px; padding: 8px 15px; font-size: 14px; width: 100%; }
   </style>
 </head>
 <body>
-  <h1>御見積内訳書</h1>
+  <h1 contenteditable="true" class="editable">御見積内訳書</h1>
+
+  <div>
+    <div class="editable" contenteditable="true" id="customerName">お客様名をここに入力</div>
+    <div class="editable" contenteditable="true" id="projectName">工事名をここに入力</div>
+    <div class="editable" contenteditable="true" id="address">住所をここに入力</div>
+  </div>
+
   <table id="estimateTable">
     <thead>
       <tr>
@@ -38,6 +42,7 @@
       </tr>
     </tfoot>
   </table>
+
   <button id="downloadBtn">PDFを出力する</button>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -81,11 +86,10 @@
       document.getElementById("downloadBtn").addEventListener("click", () => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        doc.addFileToVFS("IPAexMincho.ttf", ""); // フォントバイナリをBase64で入れる必要があるが、ここは後で対応可
-        doc.addFont("IPAexMincho.ttf", "IPAexMincho", "normal");
-        doc.setFont("IPAexMincho");
-        doc.text("御見積内訳書", 80, 15);
-        doc.autoTable({ html: '#estimateTable', startY: 25 });
+        doc.text(document.getElementById("customerName").innerText, 14, 20);
+        doc.text(document.getElementById("projectName").innerText, 14, 28);
+        doc.text(document.getElementById("address").innerText, 14, 36);
+        doc.autoTable({ html: '#estimateTable', startY: 45 });
         doc.save("見積書.pdf");
       });
     });
