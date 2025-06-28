@@ -2,64 +2,39 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>御見積書 - MiTAS</title>
+  <title>御見積内訳書 - MiTAS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
-    body { font-family: 'IPAexMincho', sans-serif; margin: 40px; color: #001f3f; }
-    h1 { text-align: center; font-size: 36px; margin-bottom: 40px; }
-    .section { margin-bottom: 60px; }
-    .cover p { font-size: 16px; line-height: 1.8; margin: 8px 0; }
-    .price { font-size: 32px; text-align: center; margin: 40px 0; font-weight: bold; }
-    .footer { text-align: center; font-size: 14px; margin-top: 60px; }
+    body { font-family: 'IPAexMincho', sans-serif; margin: 20px; }
+    h1 { text-align: center; font-size: 24px; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { border: 1px solid #333; padding: 8px; font-size: 14px; }
     th { background: #2980b9; color: #fff; }
     .total { font-weight: bold; background: #2980b9; color: #fff; text-align: right; }
-    #downloadBtn { margin-top: 30px; padding: 10px 20px; font-size: 16px; }
+    #downloadBtn { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
   </style>
 </head>
 <body>
-  <!-- 表紙部分 -->
-  <div class="section cover">
-    <h1>御見積書</h1>
-    <p>（株）お客様名 御中</p>
-    <p>工事名：〇〇解体工事</p>
-    <p>工事場所：〇〇市〇〇町</p>
-    <p>工事期間：〇〇月〇〇日 ～ 〇〇月〇〇日</p>
-    <p>支払条件：末締め翌月末支払い</p>
-    <p>見積有効期限：〇〇月〇〇日まで</p>
-    <p>鋼票：なし</p>
-    <div class="price">¥1,600,000-</div>
-    <p style="text-align: center;">見積金額には消費税（10%）が含まれています。</p>
-    <div class="footer">
-      Powered by MiTAS<br>
-      株式会社丸解 鹿児島市五ヶ別府町3334 TEL:099-297-4442 FAX:099-297-4443
-    </div>
-  </div>
-
-  <!-- 内訳部分 -->
-  <div class="section estimate">
-    <h1>御見積内訳書</h1>
-    <table id="estimateTable">
-      <thead>
-        <tr>
-          <th>項目</th>
-          <th>数量</th>
-          <th>単位</th>
-          <th>単価</th>
-          <th>金額</th>
-        </tr>
-      </thead>
-      <tbody id="estimateBody"></tbody>
-      <tfoot>
-        <tr class="total">
-          <td colspan="4">合計</td>
-          <td id="totalPrice">-</td>
-        </tr>
-      </tfoot>
-    </table>
-    <button id="downloadBtn">PDFを出力する</button>
-  </div>
+  <h1>御見積内訳書</h1>
+  <table id="estimateTable">
+    <thead>
+      <tr>
+        <th>項目</th>
+        <th>数量</th>
+        <th>単位</th>
+        <th>単価</th>
+        <th>金額</th>
+      </tr>
+    </thead>
+    <tbody id="estimateBody"></tbody>
+    <tfoot>
+      <tr class="total">
+        <td colspan="4">合計</td>
+        <td id="totalPrice">-</td>
+      </tr>
+    </tfoot>
+  </table>
+  <button id="downloadBtn">PDFを出力する</button>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -67,9 +42,11 @@
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const params = new URLSearchParams(window.location.search);
-      const structure = params.get("structure") || "木造";
+      const structure = params.get("structure");
       const area = parseFloat(params.get("area") || 0);
       const scaffold = parseFloat(params.get("scaffold") || 0);
+      const leftovers = params.get("leftovers") || "未入力";
+      const additional = params.get("additional") || "未入力";
 
       const unitPrices = {
         "木造": 33000,
@@ -80,6 +57,8 @@
       };
 
       const rows = [
+        ["残置物の有無", leftovers, "-", "-", "-"],
+        ["付帯工事の有無", additional, "-", "-", "-"],
         ["解体工事費", area, "㎡", unitPrices[structure] || 0, area * (unitPrices[structure] || 0)],
         ["足場工事費", scaffold, "㎡", unitPrices["足場"], scaffold * unitPrices["足場"]]
       ];
@@ -87,13 +66,14 @@
       let total = 0;
       const tbody = document.getElementById("estimateBody");
       rows.forEach(([label, qty, unit, price, amount]) => {
-        total += amount;
+        if (!isNaN(amount)) total += amount;
+        const amountText = amount !== "-" ? amount.toLocaleString() : "-";
         const row = `<tr>
           <td>${label}</td>
           <td>${qty}</td>
           <td>${unit}</td>
-          <td>${price.toLocaleString()}</td>
-          <td>${amount.toLocaleString()}</td>
+          <td>${price !== "-" ? price.toLocaleString() : "-"}</td>
+          <td>${amountText}</td>
         </tr>`;
         tbody.insertAdjacentHTML("beforeend", row);
       });
@@ -102,11 +82,9 @@
       document.getElementById("downloadBtn").addEventListener("click", () => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        doc.html(document.body, {
-          callback: () => doc.save("見積書.pdf"),
-          x: 10,
-          y: 10
-        });
+        doc.text("御見積内訳書", 80, 15);
+        doc.autoTable({ html: '#estimateTable', startY: 25 });
+        doc.save("見積書.pdf");
       });
     });
   </script>
