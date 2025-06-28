@@ -12,10 +12,22 @@
     th { background: #2980b9; color: #fff; }
     .total { font-weight: bold; background: #2980b9; color: #fff; text-align: right; }
     #downloadBtn { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
+    .section { margin-bottom: 20px; }
   </style>
 </head>
 <body>
   <h1>御見積内訳書</h1>
+
+  <div class="section">
+    <h3>お客様情報</h3>
+    <p><strong>工事名：</strong> <span id="workName"></span></p>
+    <p><strong>工事場所：</strong> <span id="workLocation"></span></p>
+    <p><strong>工事期間：</strong> <span id="workPeriod"></span></p>
+    <p><strong>支払条件：</strong> <span id="paymentTerms"></span></p>
+    <p><strong>見積有効期限：</strong> <span id="estimateValidity"></span></p>
+    <p><strong>摘要：</strong> <span id="remarks"></span></p>
+  </div>
+
   <table id="estimateTable">
     <thead>
       <tr>
@@ -34,58 +46,66 @@
       </tr>
     </tfoot>
   </table>
+
   <button id="downloadBtn">PDFを出力する</button>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const params = new URLSearchParams(window.location.search);
-      const structure = params.get("structure");
-      const area = parseFloat(params.get("area") || 0);
-      const scaffold = parseFloat(params.get("scaffold") || 0);
-      const leftovers = params.get("leftovers") || "未入力";
-      const additional = params.get("additional") || "未入力";
+    const params = new URLSearchParams(window.location.search);
 
-      const unitPrices = {
-        "木造": 33000,
-        "RC造": 50000,
-        "S造": 33000,
-        "軽量鉄骨造": 33000,
-        "足場": 600
-      };
+    // お客様情報を反映
+    document.getElementById("workName").textContent = params.get("workName") || "-";
+    document.getElementById("workLocation").textContent = params.get("workLocation") || "-";
+    document.getElementById("workPeriod").textContent = params.get("workPeriod") || "-";
+    document.getElementById("paymentTerms").textContent = params.get("paymentTerms") || "-";
+    document.getElementById("estimateValidity").textContent = params.get("estimateValidity") || "-";
+    document.getElementById("remarks").textContent = params.get("remarks") || "-";
 
-      const rows = [
-        ["残置物の有無", leftovers, "-", "-", "-"],
-        ["付帯工事の有無", additional, "-", "-", "-"],
-        ["解体工事費", area, "㎡", unitPrices[structure] || 0, area * (unitPrices[structure] || 0)],
-        ["足場工事費", scaffold, "㎡", unitPrices["足場"], scaffold * unitPrices["足場"]]
-      ];
+    const structure = params.get("structure") || "";
+    const area = parseFloat(params.get("area") || 0);
+    const scaffold = parseFloat(params.get("scaffold") || 0);
+    const zanchi = params.get("zanchi") || "-";
+    const futai = params.get("futai") || "-";
 
-      let total = 0;
-      const tbody = document.getElementById("estimateBody");
-      rows.forEach(([label, qty, unit, price, amount]) => {
-        if (!isNaN(amount)) total += amount;
-        const amountText = amount !== "-" ? amount.toLocaleString() : "-";
-        const row = `<tr>
-          <td>${label}</td>
-          <td>${qty}</td>
-          <td>${unit}</td>
-          <td>${price !== "-" ? price.toLocaleString() : "-"}</td>
-          <td>${amountText}</td>
-        </tr>`;
-        tbody.insertAdjacentHTML("beforeend", row);
-      });
-      document.getElementById("totalPrice").textContent = total.toLocaleString() + " 円";
+    const unitPrices = {
+      "木造": 33000,
+      "RC造": 50000,
+      "S造": 33000,
+      "軽量鉄骨造": 33000,
+      "足場": 600
+    };
 
-      document.getElementById("downloadBtn").addEventListener("click", () => {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.text("御見積内訳書", 80, 15);
-        doc.autoTable({ html: '#estimateTable', startY: 25 });
-        doc.save("見積書.pdf");
-      });
+    const rows = [
+      ["建物構造", structure, "", "", ""],
+      ["残置物の有無", zanchi, "", "", ""],
+      ["付帯工事の有無", futai, "", "", ""],
+      ["解体工事費", area, "㎡", unitPrices[structure] || 0, area * (unitPrices[structure] || 0)],
+      ["足場工事費", scaffold, "㎡", unitPrices["足場"], scaffold * unitPrices["足場"]]
+    ];
+
+    let total = 0;
+    const tbody = document.getElementById("estimateBody");
+    rows.forEach(([label, qty, unit, price, amount]) => {
+      if (amount !== "") total += amount;
+      const row = `<tr>
+        <td>${label}</td>
+        <td>${qty}</td>
+        <td>${unit}</td>
+        <td>${price ? price.toLocaleString() : ""}</td>
+        <td>${amount ? amount.toLocaleString() : ""}</td>
+      </tr>`;
+      tbody.insertAdjacentHTML("beforeend", row);
+    });
+    document.getElementById("totalPrice").textContent = total.toLocaleString() + " 円";
+
+    document.getElementById("downloadBtn").addEventListener("click", () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text("御見積内訳書", 80, 15);
+      doc.autoTable({ html: '#estimateTable', startY: 25 });
+      doc.save("見積書.pdf");
     });
   </script>
 </body>
