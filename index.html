@@ -16,6 +16,10 @@
 <body>
   <h1>MiTAS 見積作成</h1>
 
+  <label>お客様名：
+    <input type="text" id="customerName" placeholder="例：株式会社〇〇様">
+  </label>
+
   <label>工事名：
     <input type="text" id="workName" placeholder="例：〇〇解体工事">
   </label>
@@ -74,6 +78,7 @@
   <script>
     function submitEstimate() {
       const params = new URLSearchParams();
+      params.append("customerName", document.getElementById("customerName").value);
       params.append("workName", document.getElementById("workName").value);
       params.append("workLocation", document.getElementById("workLocation").value);
       params.append("workPeriod", document.getElementById("workPeriod").value);
