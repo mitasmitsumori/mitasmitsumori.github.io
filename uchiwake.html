@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
   <title>御見積内訳書 - MiTAS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
-    body { font-family: sans-serif; margin: 20px; }
-    h1 { font-size: 24px; }
+    body { font-family: 'IPAexMincho', sans-serif; margin: 20px; }
+    h1 { text-align: center; font-size: 24px; }
+    .info { margin-bottom: 20px; }
+    .info p { margin: 5px 0; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { border: 1px solid #333; padding: 8px; font-size: 14px; }
     th { background: #2980b9; color: #fff; }
@@ -16,17 +18,10 @@
 </head>
 <body>
   <h1>御見積内訳書</h1>
-  <p><strong>お客様名：</strong> <span id="customerName"></span></p>
-  <p><strong>工事名：</strong> <span id="workName"></span></p>
-  <p><strong>工事場所：</strong> <span id="workLocation"></span></p>
-  <p><strong>工事期間：</strong> <span id="workPeriod"></span></p>
-  <p><strong>支払条件：</strong> <span id="paymentTerms"></span></p>
-  <p><strong>見積有効期限：</strong> <span id="estimateValidity"></span></p>
-  <p><strong>摘要（備考）：</strong> <span id="remarks"></span></p>
-  <p><strong>残置物：</strong> <span id="zanchi"></span></p>
-  <p><strong>付帯工事：</strong> <span id="futai"></span></p>
 
-  <table>
+  <div class="info" id="estimateInfo"></div>
+
+  <table id="estimateTable">
     <thead>
       <tr>
         <th>項目</th>
@@ -54,22 +49,35 @@
     document.addEventListener("DOMContentLoaded", () => {
       const params = new URLSearchParams(window.location.search);
 
-      document.getElementById("customerName").textContent = params.get("customerName") || "";
-      document.getElementById("workName").textContent = params.get("workName") || "";
-      document.getElementById("workLocation").textContent = params.get("workLocation") || "";
-      document.getElementById("workPeriod").textContent = params.get("workPeriod") || "";
-      document.getElementById("paymentTerms").textContent = params.get("paymentTerms") || "";
-      document.getElementById("estimateValidity").textContent = params.get("estimateValidity") || "";
-      document.getElementById("remarks").textContent = params.get("remarks") || "";
-      document.getElementById("zanchi").textContent = params.get("zanchi") || "";
-      document.getElementById("futai").textContent = params.get("futai") || "";
+      // 表示用入力情報
+      const infoFields = [
+        ["お客様名", params.get("customerName")],
+        ["工事名", params.get("workName")],
+        ["工事場所", params.get("workLocation")],
+        ["工事期間", params.get("workPeriod")],
+        ["支払条件", params.get("paymentTerms")],
+        ["見積有効期限", params.get("estimateValidity")],
+        ["摘要", params.get("remarks")],
+        ["残置物", params.get("zanchi")],
+        ["付帯工事", params.get("futai")]
+      ];
 
+      const infoDiv = document.getElementById("estimateInfo");
+      infoFields.forEach(([label, value]) => {
+        if (value) infoDiv.insertAdjacentHTML("beforeend", `<p><strong>${label}：</strong> ${value}</p>`);
+      });
+
+      // 数値系パラメータ取得
+      const structure = params.get("structure");
       const area = parseFloat(params.get("area") || 0);
       const scaffold = parseFloat(params.get("scaffold") || 0);
 
-      const structure = params.get("structure");
       const unitPrices = {
-        "木造": 33000, "RC造": 50000, "S造": 33000, "軽量鉄骨造": 33000, "足場": 600
+        "木造": 33000,
+        "RC造": 50000,
+        "S造": 33000,
+        "軽量鉄骨造": 33000,
+        "足場": 600
       };
 
       const rows = [
@@ -96,7 +104,7 @@
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         doc.text("御見積内訳書", 80, 15);
-        doc.autoTable({ html: 'table', startY: 25 });
+        doc.autoTable({ html: '#estimateTable', startY: 25 });
         doc.save("見積書.pdf");
       });
     });
