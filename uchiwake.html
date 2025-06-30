@@ -2,31 +2,24 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>御見積内訳書 - MiTAS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MiTAS 御見積内訳書</title>
   <style>
-    body { font-family: 'IPAexMincho', sans-serif; margin: 20px; }
+    body { font-family: sans-serif; margin: 20px; }
     h1 { text-align: center; font-size: 24px; }
+    .info { margin-top: 20px; }
+    .info p { margin: 5px 0; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { border: 1px solid #333; padding: 8px; font-size: 14px; }
     th { background: #2980b9; color: #fff; }
     .total { font-weight: bold; background: #2980b9; color: #fff; text-align: right; }
     #downloadBtn { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
-    .section { margin-bottom: 20px; }
   </style>
 </head>
 <body>
   <h1>御見積内訳書</h1>
 
-  <div class="section">
-    <h3>お客様情報</h3>
-    <p><strong>工事名：</strong> <span id="workName"></span></p>
-    <p><strong>工事場所：</strong> <span id="workLocation"></span></p>
-    <p><strong>工事期間：</strong> <span id="workPeriod"></span></p>
-    <p><strong>支払条件：</strong> <span id="paymentTerms"></span></p>
-    <p><strong>見積有効期限：</strong> <span id="estimateValidity"></span></p>
-    <p><strong>摘要：</strong> <span id="remarks"></span></p>
-  </div>
+  <div class="info" id="customerInfo"></div>
 
   <table id="estimateTable">
     <thead>
@@ -46,7 +39,6 @@
       </tr>
     </tfoot>
   </table>
-
   <button id="downloadBtn">PDFを出力する</button>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -55,19 +47,23 @@
   <script>
     const params = new URLSearchParams(window.location.search);
 
-    // お客様情報を反映
-    document.getElementById("workName").textContent = params.get("workName") || "-";
-    document.getElementById("workLocation").textContent = params.get("workLocation") || "-";
-    document.getElementById("workPeriod").textContent = params.get("workPeriod") || "-";
-    document.getElementById("paymentTerms").textContent = params.get("paymentTerms") || "-";
-    document.getElementById("estimateValidity").textContent = params.get("estimateValidity") || "-";
-    document.getElementById("remarks").textContent = params.get("remarks") || "-";
+    // 表紙情報を表示
+    const infoDiv = document.getElementById("customerInfo");
+    infoDiv.innerHTML = `
+      <p><strong>お客様名：</strong>${params.get("customerName") || "-"}</p>
+      <p><strong>工事名：</strong>${params.get("workName") || "-"}</p>
+      <p><strong>工事場所：</strong>${params.get("workLocation") || "-"}</p>
+      <p><strong>工事期間：</strong>${params.get("workPeriod") || "-"}</p>
+      <p><strong>支払条件：</strong>${params.get("paymentTerms") || "-"}</p>
+      <p><strong>見積有効期限：</strong>${params.get("estimateValidity") || "-"}</p>
+      <p><strong>摘要：</strong>${params.get("remarks") || "-"}</p>
+      <p><strong>残置物：</strong>${params.get("zanchi") || "-"}</p>
+      <p><strong>付帯工事：</strong>${params.get("futai") || "-"}</p>
+    `;
 
-    const structure = params.get("structure") || "";
+    const structure = params.get("structure");
     const area = parseFloat(params.get("area") || 0);
     const scaffold = parseFloat(params.get("scaffold") || 0);
-    const zanchi = params.get("zanchi") || "-";
-    const futai = params.get("futai") || "-";
 
     const unitPrices = {
       "木造": 33000,
@@ -78,9 +74,6 @@
     };
 
     const rows = [
-      ["建物構造", structure, "", "", ""],
-      ["残置物の有無", zanchi, "", "", ""],
-      ["付帯工事の有無", futai, "", "", ""],
       ["解体工事費", area, "㎡", unitPrices[structure] || 0, area * (unitPrices[structure] || 0)],
       ["足場工事費", scaffold, "㎡", unitPrices["足場"], scaffold * unitPrices["足場"]]
     ];
@@ -88,13 +81,13 @@
     let total = 0;
     const tbody = document.getElementById("estimateBody");
     rows.forEach(([label, qty, unit, price, amount]) => {
-      if (amount !== "") total += amount;
+      total += amount;
       const row = `<tr>
         <td>${label}</td>
         <td>${qty}</td>
         <td>${unit}</td>
-        <td>${price ? price.toLocaleString() : ""}</td>
-        <td>${amount ? amount.toLocaleString() : ""}</td>
+        <td>${price.toLocaleString()}</td>
+        <td>${amount.toLocaleString()}</td>
       </tr>`;
       tbody.insertAdjacentHTML("beforeend", row);
     });
