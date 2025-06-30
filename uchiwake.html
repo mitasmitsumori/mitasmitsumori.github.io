@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MiTAS 御見積内訳書</title>
+  <title>御見積内訳書 - MiTAS</title>
   <style>
     body { font-family: sans-serif; margin: 20px; }
-    h1 { text-align: center; font-size: 24px; }
-    .info { margin-top: 20px; }
-    .info p { margin: 5px 0; }
+    h1 { font-size: 24px; margin-bottom: 10px; }
+    .customer { font-size: 18px; margin-bottom: 20px; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { border: 1px solid #333; padding: 8px; font-size: 14px; }
     th { background: #2980b9; color: #fff; }
@@ -18,8 +17,7 @@
 </head>
 <body>
   <h1>御見積内訳書</h1>
-
-  <div class="info" id="customerInfo"></div>
+  <div class="customer" id="customerName">お客様名：</div>
 
   <table id="estimateTable">
     <thead>
@@ -39,66 +37,53 @@
       </tr>
     </tfoot>
   </table>
+
   <button id="downloadBtn">PDFを出力する</button>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
+    document.addEventListener("DOMContentLoaded", () => {
+      const params = new URLSearchParams(window.location.search);
 
-    // 表紙情報を表示
-    const infoDiv = document.getElementById("customerInfo");
-    infoDiv.innerHTML = `
-      <p><strong>お客様名：</strong>${params.get("customerName") || "-"}</p>
-      <p><strong>工事名：</strong>${params.get("workName") || "-"}</p>
-      <p><strong>工事場所：</strong>${params.get("workLocation") || "-"}</p>
-      <p><strong>工事期間：</strong>${params.get("workPeriod") || "-"}</p>
-      <p><strong>支払条件：</strong>${params.get("paymentTerms") || "-"}</p>
-      <p><strong>見積有効期限：</strong>${params.get("estimateValidity") || "-"}</p>
-      <p><strong>摘要：</strong>${params.get("remarks") || "-"}</p>
-      <p><strong>残置物：</strong>${params.get("zanchi") || "-"}</p>
-      <p><strong>付帯工事：</strong>${params.get("futai") || "-"}</p>
-    `;
+      const customer = params.get("customerName") || "未入力";
+      document.getElementById("customerName").textContent = "お客様名：" + customer;
 
-    const structure = params.get("structure");
-    const area = parseFloat(params.get("area") || 0);
-    const scaffold = parseFloat(params.get("scaffold") || 0);
+      const structure = params.get("structure");
+      const area = parseFloat(params.get("area") || 0);
+      const scaffold = parseFloat(params.get("scaffold") || 0);
 
-    const unitPrices = {
-      "木造": 33000,
-      "RC造": 50000,
-      "S造": 33000,
-      "軽量鉄骨造": 33000,
-      "足場": 600
-    };
+      const unitPrices = { "木造": 33000, "RC造": 50000, "S造": 33000, "軽量鉄骨造": 33000, "足場": 600 };
 
-    const rows = [
-      ["解体工事費", area, "㎡", unitPrices[structure] || 0, area * (unitPrices[structure] || 0)],
-      ["足場工事費", scaffold, "㎡", unitPrices["足場"], scaffold * unitPrices["足場"]]
-    ];
+      const rows = [
+        ["解体工事費", area, "㎡", unitPrices[structure] || 0, area * (unitPrices[structure] || 0)],
+        ["足場工事費", scaffold, "㎡", unitPrices["足場"], scaffold * unitPrices["足場"]]
+      ];
 
-    let total = 0;
-    const tbody = document.getElementById("estimateBody");
-    rows.forEach(([label, qty, unit, price, amount]) => {
-      total += amount;
-      const row = `<tr>
-        <td>${label}</td>
-        <td>${qty}</td>
-        <td>${unit}</td>
-        <td>${price.toLocaleString()}</td>
-        <td>${amount.toLocaleString()}</td>
-      </tr>`;
-      tbody.insertAdjacentHTML("beforeend", row);
-    });
-    document.getElementById("totalPrice").textContent = total.toLocaleString() + " 円";
+      let total = 0;
+      const tbody = document.getElementById("estimateBody");
+      rows.forEach(([label, qty, unit, price, amount]) => {
+        total += amount;
+        const row = `<tr>
+          <td>${label}</td>
+          <td>${qty}</td>
+          <td>${unit}</td>
+          <td>${price.toLocaleString()}</td>
+          <td>${amount.toLocaleString()}</td>
+        </tr>`;
+        tbody.insertAdjacentHTML("beforeend", row);
+      });
+      document.getElementById("totalPrice").textContent = total.toLocaleString() + " 円";
 
-    document.getElementById("downloadBtn").addEventListener("click", () => {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.text("御見積内訳書", 80, 15);
-      doc.autoTable({ html: '#estimateTable', startY: 25 });
-      doc.save("見積書.pdf");
+      document.getElementById("downloadBtn").addEventListener("click", () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text("御見積内訳書", 80, 15);
+        doc.text(`お客様名：${customer}`, 14, 25);
+        doc.autoTable({ html: '#estimateTable', startY: 35 });
+        doc.save("見積書.pdf");
+      });
     });
   </script>
 </body>
