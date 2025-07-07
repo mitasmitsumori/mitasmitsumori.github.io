@@ -10,42 +10,70 @@
     table { border-collapse: collapse; width: 100%; margin-top: 20px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
     th { background-color: #f0f0f0; }
+    .total { font-weight: bold; background-color: #e0e0e0; }
   </style>
 </head>
 <body>
   <h1>見積内訳</h1>
   <table>
-    <tr><th>項目</th><th>内容</th></tr>
-    <tr><td>建物構造</td><td id="structure"></td></tr>
-    <tr><td>延床面積（㎡）</td><td id="area"></td></tr>
-    <tr><td>現場住所</td><td id="address"></td></tr>
-    <tr><td>足場面積（㎡）</td><td id="scaffold"></td></tr>
-    <tr><td>残置物の有無</td><td id="leftovers"></td></tr>
-    <tr><td>付帯工事の有無</td><td id="additional"></td></tr>
-    <tr><td>木くず（kg）</td><td id="woodWaste"></td></tr>
-    <tr><td>ボード類（kg）</td><td id="boardWaste"></td></tr>
-    <tr><td>廃プラ類（kg）</td><td id="plasticWaste"></td></tr>
-    <tr><td>ガラ（kg）</td><td id="rubbleWaste"></td></tr>
-    <tr><td>ガラス（kg）</td><td id="glassWaste"></td></tr>
-    <tr><td>陶器（kg）</td><td id="ceramicWaste"></td></tr>
+    <tr><th>項目</th><th>数量</th><th>単価</th><th>金額</th></tr>
+    <tbody id="estimateBody"></tbody>
+    <tr class="total">
+      <td colspan="3">合計金額</td><td id="totalAmount"></td>
+    </tr>
   </table>
 
   <script>
     const params = new URLSearchParams(window.location.search);
+    const structure = params.get("structure") || "未入力";
+    const area = parseFloat(params.get("area") || 0);
+    const scaffold = parseFloat(params.get("scaffold") || 0);
+    const woodWaste = parseFloat(params.get("woodWaste") || 0);
+    const boardWaste = parseFloat(params.get("boardWaste") || 0);
+    const plasticWaste = parseFloat(params.get("plasticWaste") || 0);
+    const rubbleWaste = parseFloat(params.get("rubbleWaste") || 0);
+    const glassWaste = parseFloat(params.get("glassWaste") || 0);
+    const ceramicWaste = parseFloat(params.get("ceramicWaste") || 0);
 
-    document.getElementById("structure").textContent = params.get("structure") || "未入力";
-    document.getElementById("area").textContent = params.get("area") || "未入力";
-    document.getElementById("address").textContent = params.get("address") || "未入力";
-    document.getElementById("scaffold").textContent = params.get("scaffold") || "未入力";
-    document.getElementById("leftovers").textContent = params.get("leftovers") || "未入力";
-    document.getElementById("additional").textContent = params.get("additional") || "未入力";
+    const unitPrices = {
+      木造: 33000 / 3.3,
+      RC造: 50000 / 3.3,
+      S造: 33000 / 3.3,
+      軽量鉄骨造: 33000 / 3.3,
+      足場: 600,
+      木くず: 16,
+      ボード類: 35,
+      廃プラ類: 50,
+      ガラ: 2,
+      ガラス: 10,
+      陶器: 20
+    };
 
-    document.getElementById("woodWaste").textContent = params.get("woodWaste") + " kg" || "0 kg";
-    document.getElementById("boardWaste").textContent = params.get("boardWaste") + " kg" || "0 kg";
-    document.getElementById("plasticWaste").textContent = params.get("plasticWaste") + " kg" || "0 kg";
-    document.getElementById("rubbleWaste").textContent = params.get("rubbleWaste") + " kg" || "0 kg";
-    document.getElementById("glassWaste").textContent = params.get("glassWaste") + " kg" || "0 kg";
-    document.getElementById("ceramicWaste").textContent = params.get("ceramicWaste") + " kg" || "0 kg";
+    const estimateBody = document.getElementById("estimateBody");
+    let total = 0;
+
+    function addRow(label, qty, unitPrice) {
+      const amount = Math.round(qty * unitPrice);
+      const row = `<tr>
+        <td>${label}</td>
+        <td>${qty.toLocaleString()}</td>
+        <td>${unitPrice.toLocaleString()} 円</td>
+        <td>${amount.toLocaleString()} 円</td>
+      </tr>`;
+      estimateBody.insertAdjacentHTML("beforeend", row);
+      total += amount;
+    }
+
+    addRow("解体工事費", area, unitPrices[structure] || 0);
+    addRow("足場費", scaffold, unitPrices.足場);
+    addRow("産廃費（木くず）", woodWaste, unitPrices.木くず);
+    addRow("産廃費（ボード類）", boardWaste, unitPrices.ボード類);
+    addRow("産廃費（廃プラ類）", plasticWaste, unitPrices.廃プラ類);
+    addRow("産廃費（ガラ）", rubbleWaste, unitPrices.ガラ);
+    addRow("産廃費（ガラス）", glassWaste, unitPrices.ガラス);
+    addRow("産廃費（陶器）", ceramicWaste, unitPrices.陶器);
+
+    document.getElementById("totalAmount").textContent = total.toLocaleString() + " 円";
   </script>
 </body>
 </html>
