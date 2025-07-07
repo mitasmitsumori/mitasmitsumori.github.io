@@ -1,36 +1,39 @@
+// MiTASアプリ用 自動計算ロジック
+
 function calculateEstimate(data, settings) {
   const result = { rows: [] };
-  let total = 0;
 
-  // 解体工事費
-  const unitPrice = settings.unitPrices[data.structure] || 0;
-  const demolitionCost = Math.round(data.area * unitPrice / 3.3);
-  result.rows.push(["解体工事費", data.area, "㎡", Math.round(unitPrice/3.3), demolitionCost]);
-  total += demolitionCost;
+  const up = settings.unitPrices;
+  const fc = settings.fixedCosts;
+
+  // 解体費
+  const demolition = Math.round(data.area * (up[data.structure] || 0));
+  result.rows.push(["解体工事費", data.area, "㎡", Math.round(up[data.structure] || 0), demolition]);
 
   // 足場費
-  const scaffoldCost = Math.round(data.scaffold * settings.unitPrices["足場"]);
-  result.rows.push(["足場工事費", data.scaffold, "㎡", settings.unitPrices["足場"], scaffoldCost]);
-  total += scaffoldCost;
+  const scaffold = Math.round(data.scaffold * up["足場"]);
+  result.rows.push(["足場工事費", data.scaffold, "㎡", up["足場"], scaffold]);
 
-  // 自動計算した発生材ごとの数量と費用
+  // 重機回送費
+  result.rows.push(["重機回送費", "-", "-", fc["重機回送費"], fc["重機回送費"]]);
+
+  // アスベスト調査費
+  result.rows.push(["アスベスト調査費", "-", "-", fc["アスベスト調査費"], fc["アスベスト調査費"]]);
+
+  // 産廃費
   const wastes = [
-    ["木くず", "woodWaste"],
-    ["ボード類", "boardWaste"],
-    ["廃プラ類", "plasticWaste"],
-    ["ガラ", "rubbleWaste"],
-    ["ガラス", "glassWaste"],
-    ["陶器", "ceramicWaste"]
+    ["木くず", data.woodWaste, up.木くず],
+    ["ボード類", data.boardWaste, up.ボード類],
+    ["廃プラ類", data.plasticWaste, up.廃プラ類],
+    ["ガラ", data.rubbleWaste, up.ガラ],
+    ["ガラス", data.glassWaste, up.ガラス],
+    ["陶器", data.ceramicWaste, up.陶器]
   ];
 
-  wastes.forEach(([label, key]) => {
-    const qty = Math.round(data.area * settings.kgPerSquareMeter[key]);
-    const unitPrice = settings.unitPrices[label];
-    const amount = Math.round(qty * unitPrice);
-    result.rows.push([`${label}（処分費）`, qty, "kg", unitPrice, amount]);
-    total += amount;
-  });
+  for (const [label, qty, unitPrice] of wastes) {
+    const cost = Math.round(qty * unitPrice);
+    result.rows.push([`${label}（処分費）`, qty, "kg", unitPrice, cost]);
+  }
 
-  result.total = total;
   return result;
 }
