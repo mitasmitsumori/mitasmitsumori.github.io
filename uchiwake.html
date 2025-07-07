@@ -2,112 +2,50 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>御見積内訳書 - MiTAS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MiTAS 見積内訳</title>
   <style>
-    body { font-family: 'IPAexMincho', sans-serif; margin: 20px; }
-    h1 { text-align: center; font-size: 24px; }
-    .info { margin-bottom: 20px; }
-    .info p { margin: 5px 0; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #333; padding: 8px; font-size: 14px; }
-    th { background: #2980b9; color: #fff; }
-    .total { font-weight: bold; background: #2980b9; color: #fff; text-align: right; }
-    #downloadBtn { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
+    body { font-family: sans-serif; padding: 20px; }
+    h1 { font-size: 24px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f0f0f0; }
   </style>
 </head>
 <body>
-  <h1>御見積内訳書</h1>
-
-  <div class="info" id="estimateInfo"></div>
-
-  <table id="estimateTable">
-    <thead>
-      <tr>
-        <th>項目</th>
-        <th>数量</th>
-        <th>単位</th>
-        <th>単価</th>
-        <th>金額</th>
-      </tr>
-    </thead>
-    <tbody id="estimateBody"></tbody>
-    <tfoot>
-      <tr class="total">
-        <td colspan="4">合計</td>
-        <td id="totalPrice">-</td>
-      </tr>
-    </tfoot>
+  <h1>見積内訳</h1>
+  <table>
+    <tr><th>項目</th><th>内容</th></tr>
+    <tr><td>建物構造</td><td id="structure"></td></tr>
+    <tr><td>延床面積（㎡）</td><td id="area"></td></tr>
+    <tr><td>現場住所</td><td id="address"></td></tr>
+    <tr><td>足場面積（㎡）</td><td id="scaffold"></td></tr>
+    <tr><td>残置物の有無</td><td id="leftovers"></td></tr>
+    <tr><td>付帯工事の有無</td><td id="additional"></td></tr>
+    <tr><td>木くず（kg）</td><td id="woodWaste"></td></tr>
+    <tr><td>ボード類（kg）</td><td id="boardWaste"></td></tr>
+    <tr><td>廃プラ類（kg）</td><td id="plasticWaste"></td></tr>
+    <tr><td>ガラ（kg）</td><td id="rubbleWaste"></td></tr>
+    <tr><td>ガラス（kg）</td><td id="glassWaste"></td></tr>
+    <tr><td>陶器（kg）</td><td id="ceramicWaste"></td></tr>
   </table>
 
-  <button id="downloadBtn">PDFを出力する</button>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(window.location.search);
 
-      // 表示用入力情報
-      const infoFields = [
-        ["お客様名", params.get("customerName")],
-        ["工事名", params.get("workName")],
-        ["工事場所", params.get("workLocation")],
-        ["工事期間", params.get("workPeriod")],
-        ["支払条件", params.get("paymentTerms")],
-        ["見積有効期限", params.get("estimateValidity")],
-        ["摘要", params.get("remarks")],
-        ["残置物", params.get("zanchi")],
-        ["付帯工事", params.get("futai")]
-      ];
+    document.getElementById("structure").textContent = params.get("structure") || "未入力";
+    document.getElementById("area").textContent = params.get("area") || "未入力";
+    document.getElementById("address").textContent = params.get("address") || "未入力";
+    document.getElementById("scaffold").textContent = params.get("scaffold") || "未入力";
+    document.getElementById("leftovers").textContent = params.get("leftovers") || "未入力";
+    document.getElementById("additional").textContent = params.get("additional") || "未入力";
 
-      const infoDiv = document.getElementById("estimateInfo");
-      infoFields.forEach(([label, value]) => {
-        if (value) infoDiv.insertAdjacentHTML("beforeend", `<p><strong>${label}：</strong> ${value}</p>`);
-      });
-
-      // 数値系パラメータ取得
-      const structure = params.get("structure");
-      const area = parseFloat(params.get("area") || 0);
-      const scaffold = parseFloat(params.get("scaffold") || 0);
-
-      const unitPrices = {
-        "木造": 33000,
-        "RC造": 50000,
-        "S造": 33000,
-        "軽量鉄骨造": 33000,
-        "足場": 600
-      };
-
-      const rows = [
-        ["解体工事費", area, "㎡", unitPrices[structure] || 0, area * (unitPrices[structure] || 0)],
-        ["足場工事費", scaffold, "㎡", unitPrices["足場"], scaffold * unitPrices["足場"]]
-      ];
-
-      let total = 0;
-      const tbody = document.getElementById("estimateBody");
-      rows.forEach(([label, qty, unit, price, amount]) => {
-        total += amount;
-        const row = `<tr>
-          <td>${label}</td>
-          <td>${qty}</td>
-          <td>${unit}</td>
-          <td>${price.toLocaleString()}</td>
-          <td>${amount.toLocaleString()}</td>
-        </tr>`;
-        tbody.insertAdjacentHTML("beforeend", row);
-      });
-      document.getElementById("totalPrice").textContent = total.toLocaleString() + " 円";
-
-      document.getElementById("downloadBtn").addEventListener("click", () => {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.text("御見積内訳書", 80, 15);
-        doc.autoTable({ html: '#estimateTable', startY: 25 });
-        doc.save("見積書.pdf");
-      });
-    });
+    document.getElementById("woodWaste").textContent = params.get("woodWaste") + " kg" || "0 kg";
+    document.getElementById("boardWaste").textContent = params.get("boardWaste") + " kg" || "0 kg";
+    document.getElementById("plasticWaste").textContent = params.get("plasticWaste") + " kg" || "0 kg";
+    document.getElementById("rubbleWaste").textContent = params.get("rubbleWaste") + " kg" || "0 kg";
+    document.getElementById("glassWaste").textContent = params.get("glassWaste") + " kg" || "0 kg";
+    document.getElementById("ceramicWaste").textContent = params.get("ceramicWaste") + " kg" || "0 kg";
   </script>
 </body>
 </html>
