@@ -2,84 +2,87 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>御見積書 - MiTAS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>御見積書</title>
   <style>
     body {
-      font-family: 'IPAexMincho', serif;
-      margin: 40px;
-      padding: 0;
-      color: #000;
+      font-family: 'IPAex明朝', serif;
+      margin: 0;
+      padding: 20px;
+      background: #ffffff;
     }
-    h1 {
+    .title {
       text-align: center;
-      font-size: 28px;
+      font-size: 32px;
+      font-weight: bold;
+      margin-top: 40px;
+      margin-bottom: 40px;
+    }
+    .section {
+      display: flex;
+      justify-content: space-between;
       margin-bottom: 30px;
     }
-    .info-box {
-      border: 1px solid #000;
-      padding: 15px;
+    .left-column {
       width: 60%;
-      float: left;
-      box-sizing: border-box;
+      line-height: 1.8;
     }
-    .info-box p {
-      margin: 6px 0;
+    .right-column {
+      width: 35%;
+      border: 1px solid #000;
+      padding: 10px;
       font-size: 14px;
+      line-height: 1.5;
     }
-    .company-box {
+    .amount-box {
       border: 1px solid #000;
       padding: 15px;
-      width: 35%;
-      float: right;
-      box-sizing: border-box;
-      font-size: 13px;
+      margin-top: 20px;
+      width: 60%;
     }
-    .clearfix::after {
-      content: "";
-      display: table;
-      clear: both;
-    }
-    .price-box {
-      margin-top: 40px;
+    .amount-box div {
+      margin-bottom: 10px;
       font-size: 16px;
-      font-weight: bold;
     }
-    .powered {
-      margin-top: 60px;
-      text-align: center;
+    .footer {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
       font-size: 12px;
-      color: #888;
+      color: #999;
     }
   </style>
 </head>
 <body>
-  <h1>御見積書</h1>
-  <div class="clearfix">
-    <div class="info-box">
-      <p><strong>お客様名：</strong>（株）九州プラット 様</p>
-      <p><strong>工事名：</strong>旧安楽温泉施設解体工事</p>
-      <p><strong>工事場所：</strong>鹿児島県霧島市牧園町宿窪田</p>
-      <p><strong>工事期間：</strong>令和6年6月20日〜9月5日（予定）</p>
-      <p><strong>支払条件：</strong>月末締め翌月末支払い</p>
-      <p><strong>見積有効期限：</strong>令和6年7月31日</p>
-      <p><strong>摘要：</strong>上記の通りお見積り申し上げます。</p>
+  <div class="title">御見積書</div>
+
+  <div class="section">
+    <div class="left-column">
+      <div>お客様名：〇〇株式会社 御中</div>
+      <div>工事名：〇〇解体工事</div>
+      <div>工事場所：鹿児島市〇〇町〇番地</div>
+      <div>工事期間：令和〇年〇月〇日 ～ 〇月〇日</div>
+      <div>支払条件：末締め翌月末支払い</div>
+      <div>見積有効期限：発行日より30日間</div>
+      <div>摘要：なし</div>
     </div>
-    <div class="company-box">
-      <p><strong>株式会社 丸解</strong></p>
-      <p>代表取締役：薩摩 寅次郎</p>
-      <p>〒890-0055</p>
-      <p>鹿児島県鹿児島市上荒田町00-00</p>
-      <p>TEL：099-000-0000</p>
-      <p>FAX：099-000-0001</p>
-      <p>産業廃棄物収集運搬業：第04602123456号</p>
+    <div class="right-column">
+      <div>株式会社 丸解</div>
+      <div>代表取締役　薩摩 寅次郎</div>
+      <div>〒891-0144</div>
+      <div>鹿児島市五ヶ別府町3334</div>
+      <div>TEL：099-297-4442</div>
+      <div>FAX：099-297-4443</div>
+      <div>産業廃棄物収集運搬：第04607149873号</div>
     </div>
   </div>
 
-  <div class="price-box">
-    見積金額：2,430,000 円（消費税 243,000 円 含む）
+  <div class="amount-box">
+    <div>御見積金額：¥2,000,000（税抜）</div>
+    <div>消費税：¥200,000</div>
+    <div>合計金額（税込）：¥2,200,000</div>
   </div>
 
-  <div class="powered">Powered by MiTAS</div>
+  <div class="footer">Powered by MiTAS</div>
 </body>
 </html>
